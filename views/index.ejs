@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="/">Home</a></li>
+          <li><a href="/about">Stats</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="jumbotron text-center">
+      <h1>Secluded</h1>
+      <p>This is an isolated page. No courteous crawler should index directly</p> 
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-6">
+          <h3><%= title %></h3>
+          <p>Welcome to <%= title %></p>
+          <p><%= message %></p>
+        </div>
+        <div class="col-sm-6">
+          <h3>Techniques</h3>        
+          <p>Robots Meta Directives</p>
+          <p><%= technique %></p>
+        </div>
+      </div>
+    </div>
+
+    <h1></h1>
+    <p></p>
+    <p></p>
+  </body>
+</html>
