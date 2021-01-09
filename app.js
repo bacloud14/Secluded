@@ -38,4 +38,31 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+var schedule = require('node-schedule');
+var uuid = require('node-uuid');
+var sqlite3 = require('sqlite3').verbose();
+var db = new sqlite3.Database(':memory:');
+var rule = new schedule.RecurrenceRule();
+rule.minute = 0;
+rule.hour = 0;
+ 
+var j = schedule.scheduleJob(rule, function(){
+  console.log('The answer to life, the universe, and everything!');
+  const latest = uuid.v4();
+  const lastes_ = {latest: latest};
+  db.serialize(function() {
+    db.run("CREATE TABLE IF NOT EXISTS URL (_id TEXT primary, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, url TEXT)");
+    db.prepare("INSERT INTO URL(_id, url) VALUES (?,?)", [latest, latest], function(err) {
+      if (err) {
+        return console.log(err.message);
+      }
+      // get the last insert id
+      console.log(`A row has been inserted with rowid ${this.lastID}`);
+    });
+
+  });
+  
+  db.close();
+});
+
 module.exports = app;
