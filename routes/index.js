@@ -28,9 +28,9 @@ var imageList = [];
 // options is optional
 glob("**/*.jpg", function (er, files) {
   files.forEach(file => {
-    console.log(file);
-    imageList.push(file)
+    imageList.push(file.split("/")[2]);
   });
+  success = myCache.set("imageList", imageList);
 })
 var j = schedule.scheduleJob("*/1 * * * *", function () {
   var content = lorem.generateParagraphs(1);
@@ -96,7 +96,8 @@ router.get('/earlier/:id', function (req, res, next) {
         if (row) {
           res.render('earlier', {
             title: 'Secluded',
-            content: row.content
+            content: row.content,
+            picURL: imageList[0]
           });
         } else {
           console.log('\x1b[31m', `No URL found with the id: ${url}`);
