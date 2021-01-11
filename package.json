@@ -10,6 +10,7 @@
     "debug": "~2.6.9",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
+    "glob": "^7.1.6",
     "http-errors": "~1.6.3",
     "lorem-ipsum": "^2.0.3",
     "morgan": "~1.9.1",

@@ -22,6 +22,16 @@ const lorem = new LoremIpsum({
     min: 4
   }
 });
+
+var glob = require("glob")
+var imageList = [];
+// options is optional
+glob("**/*.jpg", function (er, files) {
+  files.forEach(file => {
+    console.log(file);
+    imageList.push(file)
+  });
+})
 var j = schedule.scheduleJob("*/1 * * * *", function () {
   var content = lorem.generateParagraphs(1);
   const latest = { url: uuid.v4(), content: content };
