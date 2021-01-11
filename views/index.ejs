@@ -1,47 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="robots" content="noindex, nofollow">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
 
-    <nav class="navbar navbar-inverse">
-      <div class="container-fluid">
-        <ul class="nav navbar-nav">
-          <li class="active"><a href="/">Home</a></li>
-          <li><a href="/stats">Stats</a></li>
-          <li><a href="/ganalytics">Google Analytics</a></li>
-          <li><a href="/latest">< latest ></a></li>
-        </ul>
-      </div>
-    </nav>
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <title>
+    <%= title %>
+  </title>
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
 
-    <div class="jumbotron text-center">
-      <h1>Secluded</h1>
-      <p>This is an isolated page. No courteous crawler should index directly</p> 
+<body>
+
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="/">Home</a></li>
+        <li><a href="/stats">Stats</a></li>
+        <li><a href="/ganalytics">Google Analytics</a></li>
+        <li><a href="/latest">
+            < latest>
+          </a></li>
+      </ul>
     </div>
+  </nav>
 
-    <div class="container">
-      <div class="row">
-        <div class="col-sm-6">
-          <h3><%= title %></h3>
-          <p>Welcome to <%= title %></p>
-          <p><%= message %></p>
-        </div>
-        <div class="col-sm-6">
-          <h3>Techniques</h3>        
-          <p>Robots Meta Directives</p>
-          <p><%= technique %></p>
-        </div>
+  <div class="jumbotron text-center">
+    <h1>Secluded</h1>
+    <p>This is an isolated page. No courteous crawler should index directly</p>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-6">
+        <h3>
+          <%= title %>
+        </h3>
+        <p>Welcome to <%= title %>
+        </p>
+        <p>
+          <%= message %>
+        </p>
+      </div>
+      <div class="col-sm-6">
+        <h3>Techniques</h3>
+        <p>Robots Meta Directives</p>
+        <p>
+          <%= technique %>
+        </p>
       </div>
     </div>
+  </div>
 
-  </body>
+  <h3 class="text-center">Ealier Secluded pages</h3>
+  <table class="table">
+    <thead class="thead-light">
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Date of birth</th>
+        <th scope="col">URL</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for (var i=0; i < 10 ; i++) { %>
+        <tr>
+          <th scope="row"><%= i %></th>
+          <td><%= urls_list[i].timestamp %></td>
+          <td><a href='earlier/<%= urls_list[i].url %>' style="opacity:<%= 1/(i+0.01) %>;">earlier/<%= urls_list[i].url %></a></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+  <% for (var i=10; i < urls_list.length ; i++) { %>
+      <a href='earlier/<%= urls_list[i].url %>' style="opacity:0;">earlier/<%= urls_list[i].url %></a>
+  <% } %>
+  <footer class="bg-light text-center text-lg-start">
+    <!-- Copyright -->
+    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2)">
+      © 2020 Copyright:
+      <a class="text-dark" href="https://Secluded.com/">Secluded</a>
+    </div>
+    <!-- Copyright -->
+  </footer>
+</body>
+
 </html>
