@@ -87,7 +87,7 @@ router.get('/earlier/:id', function (req, res, next) {
       if (err) {
         return console.error(err.message);
       }
-      let sql = `SELECT _id, timestamp, url, content FROM URL WHERE _id = ?`;
+      let sql = `SELECT rowid, _id, timestamp, url, content FROM URL WHERE _id = ?`;
       let url = req.params.id;
       db.get(sql, [url], (err, row) => {
         if (err) {
@@ -97,7 +97,7 @@ router.get('/earlier/:id', function (req, res, next) {
           res.render('earlier', {
             title: 'Secluded',
             content: row.content,
-            picURL: imageList[0]
+            picURL: imageList[row.rowid % 30]
           });
         } else {
           console.log('\x1b[31m', `No URL found with the id: ${url}`);
@@ -118,38 +118,37 @@ const { Readable } = require('stream')
 let sitemap
 
 router.get('/sitemap.xml', function(req, res) {
-  res.header('Content-Type', 'application/xml');
-  res.header('Content-Encoding', 'gzip');
-  // if we have a cached entry send it
-  if (sitemap) {
-    res.send(sitemap)
-    return
-  }
-
-  try {
-    const smStream = new SitemapStream({ hostname: 'https://example.com/' })
-    const pipeline = smStream.pipe(createGzip())
-
-    // pipe your entries or directly write them.
-    smStream.write({ url: '/page-1/',  changefreq: 'daily', priority: 0.3 })
-    smStream.write({ url: '/page-2/',  changefreq: 'monthly',  priority: 0.7 })
-    smStream.write({ url: '/page-3/'})    // changefreq: 'weekly',  priority: 0.5
-    smStream.write({ url: '/page-4/',   img: "http://urlTest.com" })
-    /* or use
-    Readable.from([{url: '/page-1'}...]).pipe(smStream)
-    if you are looking to avoid writing your own loop.
-    */
-
-    // cache the response
-    streamToPromise(pipeline).then(sm => sitemap = sm)
-    // make sure to attach a write stream such as streamToPromise before ending
-    smStream.end()
-    // stream write the response
-    pipeline.pipe(res).on('error', (e) => {throw e})
-  } catch (e) {
-    console.error(e)
-    res.status(500).end()
-  }
+  db.all(`SELECT _id, timestamp, url, content FROM URL ORDER BY date(_id)`, [], (err, rows) => {
+    
+    res.header('Content-Type', 'application/xml');
+    res.header('Content-Encoding', 'gzip');
+    // if we have a cached entry send it
+    if (sitemap) {
+      res.send(sitemap)
+      return
+    }
+  
+    try {
+      const smStream = new SitemapStream({ hostname: 'https://example.com/' })
+      const pipeline = smStream.pipe(createGzip())
+  
+      rows.forEach(row => {
+        smStream.write({ url: `earlier/${row.url}/`,  changefreq: 'monthly', priority: 0.1 });
+      })
+      
+  
+      // cache the response
+      streamToPromise(pipeline).then(sm => sitemap = sm)
+      // make sure to attach a write stream such as streamToPromise before ending
+      smStream.end()
+      // stream write the response
+      pipeline.pipe(res).on('error', (e) => {throw e})
+    } catch (e) {
+      console.error(e)
+      res.status(500).end()
+    }
+  });
+  
 })
 
 
