@@ -32,7 +32,7 @@ glob("**/*.jpg", function (er, files) {
   });
   success = myCache.set("imageList", imageList);
 })
-var j = schedule.scheduleJob("*/1 * * * *", function () {
+var j = schedule.scheduleJob("*/9 * * * *", function () {
   var content = lorem.generateParagraphs(1);
   const latest = { url: uuid.v4(), content: content };
   console.log('\x1b[36m%s\x1b[0m', 'CRON job caching', latest.url);

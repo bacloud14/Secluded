@@ -12,6 +12,13 @@ One URL indexing is tracked with time going on to see how it ages. It also gener
 
 Robots meta directives and robots.txt are pieces of code that provide crawlers instructions for how to crawl or index web page content. One hidden page is hosted. Its URL (and content) is unique and random. The latest page changes over time so that we track evolution of indexing with pages aging. Links are withing homepage so that crawlers can follow.
 
+# A Glimpse of UI
+
+Just the homepage.
+
+![capture](Capture.PNG)
+
+
 # Contribution
 
 Todo: 
