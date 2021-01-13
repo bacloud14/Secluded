@@ -13,6 +13,7 @@
     "express": "~4.16.1",
     "express-useragent": "^1.0.15",
     "glob": "^7.1.6",
+    "helmet": "^4.3.1",
     "http-errors": "~1.6.3",
     "lorem-ipsum": "^2.0.3",
     "lowdb": "^1.0.0",
@@ -24,5 +25,8 @@
     "node-uuid": "^1.4.8",
     "sitemap": "^6.3.5",
     "sqlite3": "^5.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.17.0"
   }
 }

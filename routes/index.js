@@ -1,20 +1,19 @@
 var express = require('express');
-var router = express.Router();
-var useragent = require('express-useragent');
-
-router.use(useragent.express());
-
 const LoremIpsum = require("lorem-ipsum").LoremIpsum;
 var schedule = require('node-schedule');
 var uuid = require('node-uuid');
 var sqlite3 = require('sqlite3').verbose();
 const NodeCache = require("node-cache");
+var router = express.Router();
+var useragent = require('express-useragent');
+router.use(useragent.express());
+
 const myCache = new NodeCache();
-var db = new sqlite3.Database('./db/secluded0.db');
+var db = new sqlite3.Database('./db/generated_URLs.db');
 var rule = new schedule.RecurrenceRule();
 rule.minute = 0;
 rule.hour = 0;
-success = myCache.set("latest", uuid.v4());
+var success = myCache.set("latest", uuid.v4());
 const lorem = new LoremIpsum({
   sentencesPerParagraph: {
     max: 8,
@@ -28,13 +27,15 @@ const lorem = new LoremIpsum({
 
 var glob = require("glob")
 var imageList = [];
-// options is optional
+
 glob("**/*.jpg", function (er, files) {
   files.forEach(file => {
     imageList.push(file.split("/")[2]);
   });
   success = myCache.set("imageList", imageList);
 })
+
+// TODO set a proper schedule (once or a week for example)
 var j = schedule.scheduleJob("*/9 * * * *", function () {
   var content = lorem.generateParagraphs(1);
   const latest = { url: uuid.v4(), content: content };
@@ -45,7 +46,7 @@ var j = schedule.scheduleJob("*/9 * * * *", function () {
       if (err) {
         return console.log(err.message);
       }
-      // get the last insert id
+      // Get the last insert id
       console.log('\x1b[36m%s\x1b[0m', `A row has been inserted with rowid ${this.lastID}`);
       success = myCache.set("latest", latest);
     });
@@ -54,7 +55,7 @@ var j = schedule.scheduleJob("*/9 * * * *", function () {
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-  visitorLog(req, '');
+  visitorLog(req, 'index', 'index');
   db.all(`SELECT _id, timestamp, url, content FROM URL ORDER BY date(_id)`, [], (err, rows) => {
     if (err) {
       console.log(err.message);
@@ -69,10 +70,10 @@ router.get('/', function (req, res, next) {
   });
 });
 
-/* GET home page. */
+/* GET latest page. */
 router.get('/latest', function (req, res, next) {
-  visitorLog(req, 'latest');
   var url = myCache.get("latest").url
+  visitorLog(req, 'latest', url);
   var content = myCache.get("latest").content;
   console.log('\x1b[33m%s\x1b[0m', "Latest found ==>  " + url)
   res.render('earlier', {
@@ -81,18 +82,15 @@ router.get('/latest', function (req, res, next) {
   });
 });
 
-/* GET home page. */
+/* GET earlier page. */
 router.get('/earlier/:id', function (req, res, next) {
-  visitorLog(req, 'ealier');
+  visitorLog(req, 'ealier', req.params.id);
   if (myCache.has("latest") && req.params.id == myCache.get("latest").url) {
     console.log("Found again ==>  " + req.params.id);
     var content = myCache.get("latest").content;
     res.send(content);
   } else {
-    let db = new sqlite3.Database('./db/secluded0.db', (err) => {
-      if (err) {
-        return console.error(err.message);
-      }
+    db.serialize(function () {
       let sql = `SELECT rowid, _id, timestamp, url, content FROM URL WHERE _id = ?`;
       let url = req.params.id;
       db.get(sql, [url], (err, row) => {
@@ -119,13 +117,11 @@ router.get('/earlier/:id', function (req, res, next) {
 
 const { SitemapStream, streamToPromise } = require('sitemap')
 const { createGzip } = require('zlib')
-const { Readable } = require('stream')
 
 let sitemap
-
+/* GET sitemap.xml page. */
 router.get('/sitemap.xml', function (req, res) {
   db.all(`SELECT _id, timestamp, url, content FROM URL ORDER BY date(_id)`, [], (err, rows) => {
-
     res.header('Content-Type', 'application/xml');
     res.header('Content-Encoding', 'gzip');
     // if we have a cached entry send it
@@ -133,16 +129,13 @@ router.get('/sitemap.xml', function (req, res) {
       res.send(sitemap)
       return
     }
-
     try {
       const smStream = new SitemapStream({ hostname: 'https://example.com/' })
+      // FIXME: change origin 
       const pipeline = smStream.pipe(createGzip())
-
       rows.forEach(row => {
         smStream.write({ url: `earlier/${row.url}/`, changefreq: 'monthly', priority: 0.1 });
       })
-
-
       // cache the response
       streamToPromise(pipeline).then(sm => sitemap = sm)
       // make sure to attach a write stream such as streamToPromise before ending
@@ -165,16 +158,17 @@ const compress = {
   deserialize: (str) => JSON.parse(zlib.gunzipSync(str), { level: 9 })
 }
 const FileSync = require('lowdb/adapters/FileSync');
-const adapter = new FileSync('db.json', { format: compress });
+const adapter = new FileSync('./db/visitors.json', { format: compress });
 const db2 = low(adapter);
 var moment = require('moment')
 const BotDetector = require("device-detector-js/dist/parsers/bot")
 
-function visitorLog(req, endpoint) {
+function visitorLog(req, endpoint, id) {
   // Object to be cached is: req.useragent
   // Just picking some keys.
   var timestamps = moment().format('HH:mm:ss')
   var requestInfo = {
+    "resource": id,
     "timestamps": timestamps,
     "endpoint": endpoint,
     "isMobile": req.useragent.isMobile,
@@ -199,7 +193,7 @@ function visitorLog(req, endpoint) {
     "source": req.useragent.source,
     "isWechat": req.useragent.isWechat
   }
-
+  // Detect bot and adding information to requestInfo
   if (req.useragent.isBot) {
     const botDetector = new BotDetector();
     const userAgent = req.useragent.source;
@@ -212,7 +206,7 @@ function visitorLog(req, endpoint) {
     .write();
 }
 
-
+// FIXME cntl-c exit (and others ?) does not exit properly
 process.on('SIGINT', () => {
   j.cancel();
   db.close();
