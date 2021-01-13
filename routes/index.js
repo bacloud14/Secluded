@@ -1,5 +1,8 @@
 var express = require('express');
 var router = express.Router();
+var useragent = require('express-useragent');
+
+router.use(useragent.express());
 
 const LoremIpsum = require("lorem-ipsum").LoremIpsum;
 var schedule = require('node-schedule');
@@ -51,6 +54,7 @@ var j = schedule.scheduleJob("*/9 * * * *", function () {
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
+  visitorLog(req, '');
   db.all(`SELECT _id, timestamp, url, content FROM URL ORDER BY date(_id)`, [], (err, rows) => {
     if (err) {
       console.log(err.message);
@@ -67,6 +71,7 @@ router.get('/', function (req, res, next) {
 
 /* GET home page. */
 router.get('/latest', function (req, res, next) {
+  visitorLog(req, 'latest');
   var url = myCache.get("latest").url
   var content = myCache.get("latest").content;
   console.log('\x1b[33m%s\x1b[0m', "Latest found ==>  " + url)
@@ -78,6 +83,7 @@ router.get('/latest', function (req, res, next) {
 
 /* GET home page. */
 router.get('/earlier/:id', function (req, res, next) {
+  visitorLog(req, 'ealier');
   if (myCache.has("latest") && req.params.id == myCache.get("latest").url) {
     console.log("Found again ==>  " + req.params.id);
     var content = myCache.get("latest").content;
@@ -151,7 +157,42 @@ router.get('/sitemap.xml', function(req, res) {
   
 })
 
+const low = require('lowdb');
+const zlib = require('zlib');
+console.log(zlib.gzipSync("dsdsdsdsdsdsdsds"));
+const compress = {
+  serialize: (obj) => zlib.gzipSync(JSON.stringify(obj), {level: 9}),
+  deserialize: (str) => JSON.parse(zlib.gunzipSync(str), {level: 9})
+}
+const FileSync = require('lowdb/adapters/FileSync');
+const adapter = new FileSync('db.json', { format: compress });
+const db2 = low(adapter);
 
+
+function visitorLog(req, endpoint){
+  db2.defaults({useragents: []}).write();
+  db2.get('useragents')
+  .push(req.useragent)
+  .write();
+  db2.get('endpoint')
+  .push(endpoint)
+  .write();
+
+  switch (endpoint) {
+    case '':
+      
+      break;
+    case 'latest':
+      
+      break;
+    case 'earlier':
+      
+        break;
+    default:
+      break;
+  }
+  
+}
 process.on('SIGINT', () => {
   j.cancel();
   db.close();
