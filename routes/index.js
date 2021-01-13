@@ -123,9 +123,9 @@ const { Readable } = require('stream')
 
 let sitemap
 
-router.get('/sitemap.xml', function(req, res) {
+router.get('/sitemap.xml', function (req, res) {
   db.all(`SELECT _id, timestamp, url, content FROM URL ORDER BY date(_id)`, [], (err, rows) => {
-    
+
     res.header('Content-Type', 'application/xml');
     res.header('Content-Encoding', 'gzip');
     // if we have a cached entry send it
@@ -133,66 +133,86 @@ router.get('/sitemap.xml', function(req, res) {
       res.send(sitemap)
       return
     }
-  
+
     try {
       const smStream = new SitemapStream({ hostname: 'https://example.com/' })
       const pipeline = smStream.pipe(createGzip())
-  
+
       rows.forEach(row => {
-        smStream.write({ url: `earlier/${row.url}/`,  changefreq: 'monthly', priority: 0.1 });
+        smStream.write({ url: `earlier/${row.url}/`, changefreq: 'monthly', priority: 0.1 });
       })
-      
-  
+
+
       // cache the response
       streamToPromise(pipeline).then(sm => sitemap = sm)
       // make sure to attach a write stream such as streamToPromise before ending
       smStream.end()
       // stream write the response
-      pipeline.pipe(res).on('error', (e) => {throw e})
+      pipeline.pipe(res).on('error', (e) => { throw e })
     } catch (e) {
       console.error(e)
       res.status(500).end()
     }
   });
-  
+
 })
 
 const low = require('lowdb');
 const zlib = require('zlib');
-console.log(zlib.gzipSync("dsdsdsdsdsdsdsds"));
+
 const compress = {
-  serialize: (obj) => zlib.gzipSync(JSON.stringify(obj), {level: 9}),
-  deserialize: (str) => JSON.parse(zlib.gunzipSync(str), {level: 9})
+  serialize: (obj) => zlib.gzipSync(JSON.stringify(obj), { level: 9 }),
+  deserialize: (str) => JSON.parse(zlib.gunzipSync(str), { level: 9 })
 }
 const FileSync = require('lowdb/adapters/FileSync');
 const adapter = new FileSync('db.json', { format: compress });
 const db2 = low(adapter);
+var moment = require('moment')
+const BotDetector = require("device-detector-js/dist/parsers/bot")
 
-
-function visitorLog(req, endpoint){
-  db2.defaults({useragents: []}).write();
-  db2.get('useragents')
-  .push(req.useragent)
-  .write();
-  db2.get('endpoint')
-  .push(endpoint)
-  .write();
-
-  switch (endpoint) {
-    case '':
-      
-      break;
-    case 'latest':
-      
-      break;
-    case 'earlier':
-      
-        break;
-    default:
-      break;
+function visitorLog(req, endpoint) {
+  // Object to be cached is: req.useragent
+  // Just picking some keys.
+  var timestamps = moment().format('HH:mm:ss')
+  var requestInfo = {
+    "timestamps": timestamps,
+    "endpoint": endpoint,
+    "isMobile": req.useragent.isMobile,
+    "isTablet": req.useragent.isTablet,
+    "isOpera": req.useragent.isOpera,
+    "isIE": req.useragent.isIE,
+    "isEdge": req.useragent.isEdge,
+    "isIECompatibilityMode": req.useragent.isIECompatibilityMode,
+    "isSafari": req.useragent.isSafari,
+    "isFirefox": req.useragent.isFirefox,
+    "isWebkit": req.useragent.isWebkit,
+    "isChrome": req.useragent.isChrome,
+    "isDesktop": req.useragent.isDesktop,
+    "isBot": req.useragent.isBot,
+    "isFacebook": req.useragent.isFacebook,
+    "silkAccelerated": req.useragent.silkAccelerated,
+    "browser": req.useragent.browser,
+    "version": req.useragent.version,
+    "os": req.useragent.os,
+    "platform": req.useragent.platform,
+    "geoIp": req.useragent.geoIp,
+    "source": req.useragent.source,
+    "isWechat": req.useragent.isWechat
   }
-  
+
+  if (req.useragent.isBot) {
+    const botDetector = new BotDetector();
+    const userAgent = req.useragent.source;
+    const bot = botDetector.parse(userAgent);
+    requestInfo["botInfo"] = bot
+  }
+  db2.defaults({ useragents: [] }).write();
+  db2.get('useragents')
+    .push(requestInfo)
+    .write();
 }
+
+
 process.on('SIGINT', () => {
   j.cancel();
   db.close();
