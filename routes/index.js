@@ -8,10 +8,15 @@ var router = express.Router();
 var useragent = require('express-useragent');
 const rateLimit = require("express-rate-limit");
 router.use(useragent.express());
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
-  headers: true
+  headers: true,
+  handler: function(req, res){
+    visitorLog(req, '.', '.', true);
+    res.status(429).send("too many requests");
+  }
 });
 router.use(apiLimiter);
 
@@ -62,7 +67,7 @@ var j = schedule.scheduleJob("*/9 * * * *", function () {
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-  visitorLog(req, 'index', 'index');
+  visitorLog(req, 'index', 'index', false);
   db.all(`SELECT _id, timestamp, url, content FROM URL ORDER BY date(_id)`, [], (err, rows) => {
     if (err) {
       console.log(err.message);
@@ -90,7 +95,7 @@ router.get('/data', function (req, res, next) {
 /* GET latest page. */
 router.get('/latest', function (req, res, next) {
   var url = myCache.get("latest").url
-  visitorLog(req, 'latest', url);
+  visitorLog(req, 'latest', url, false);
   var content = myCache.get("latest").content;
   console.log('\x1b[33m%s\x1b[0m', "Latest found ==>  " + url)
   res.render('earlier', {
@@ -101,7 +106,7 @@ router.get('/latest', function (req, res, next) {
 
 /* GET earlier page. */
 router.get('/earlier/:id', function (req, res, next) {
-  visitorLog(req, 'ealier', req.params.id);
+  visitorLog(req, 'ealier', req.params.id, false);
   if (myCache.has("latest") && req.params.id == myCache.get("latest").url) {
     console.log("Found again ==>  " + req.params.id);
     var content = myCache.get("latest").content;
@@ -184,7 +189,7 @@ const db2 = low(adapter);
 var moment = require('moment')
 const BotDetector = require("device-detector-js/dist/parsers/bot")
 const isbot = require('isbot')
-function visitorLog(req, endpoint, id) {
+function visitorLog(req, endpoint, id, critical) {
   // Object to be cached is: req.useragent
   // Just picking some keys.
   var timestamps = moment().format('HH:mm:ss')
@@ -212,7 +217,8 @@ function visitorLog(req, endpoint, id) {
     "platform": req.useragent.platform,
     "geoIp": req.useragent.geoIp,
     "source": req.useragent.source,
-    "isWechat": req.useragent.isWechat
+    "isWechat": req.useragent.isWechat,
+    "critical": critical
   }
   // Detect bot and adding information to requestInfo
   if (req.useragent.isBot || isbot(req.get('user-agent'))) {
