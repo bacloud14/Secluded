@@ -37,7 +37,7 @@ body, html {
   padding: 20px;
   border-radius: 15px;
   margin-top: 50px;
-  margin-bottom: 50px
+  margin-bottom: 50px;
 }
 
 .like {
@@ -103,4 +103,15 @@ body, html {
 .fa-star-o {
   color: #FF6F00;
   cursor: pointer
+}
+
+.active{
+  background-color: #eee;
+}
+
+.footer {
+  position: relative;
+  bottom: 0;
+  /* Set the fixed height of the footer here */
+  background-color: transparent;
 }

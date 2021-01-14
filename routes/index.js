@@ -6,7 +6,14 @@ var sqlite3 = require('sqlite3').verbose();
 const NodeCache = require("node-cache");
 var router = express.Router();
 var useragent = require('express-useragent');
+const rateLimit = require("express-rate-limit");
 router.use(useragent.express());
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  headers: true
+});
+router.use(apiLimiter);
 
 const myCache = new NodeCache();
 var db = new sqlite3.Database('./db/generated_URLs.db');

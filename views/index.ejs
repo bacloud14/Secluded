@@ -21,20 +21,25 @@
   <div id="particles-js" style="position:fixed;width:100%;z-index:-10;"></div>
   <script src="/javascripts/particles.min.js"></script>
   <script src="/javascripts/particles.app.js"></script>
-  <nav class="navbar navbar-inverse">
+  <div class="collapse navbar-collapse" id="navbarNav">
     <div class="container-fluid">
-      <ul class="nav navbar-nav">
+      <ul class="nav navbar-nav mr-auto">
         <li class="active"><a href="/">Home</a></li>
         <li><a href="/data">Data</a></li>
         <li><a href="https://www.imperva.com/blog/most-active-good-bots/">Spiders</a></li>
         <li><a href="/latest">Latest</a></li>
       </ul>
+      <ul class="nav navbar-nav">
+        <li class="nav-link"><a href="https://github.com/bacloud14/Secluded">fork</a></li>
+      </ul>
+      </ul>
     </div>
-  </nav>
+  </div>
 
   <div class="jumbotron text-center">
     <h1>Secluded</h1>
-    <p>This is an isolated page. No courteous crawler should index directly. Please help us improve this study by sharing in any of these social networks.</p>
+    <p>This is an isolated page. No courteous crawler should index directly. Please help us improve this study by
+      sharing in any of these social networks.</p>
     <div class="share-btn">
       <a class="btn-vk" data-id="vk">VK</a>
       <a class="btn-facebook" data-id="fb">Facebook</a>
@@ -43,7 +48,7 @@
       <a class="btn-reddit" data-id="re">Reddit</a>
       <a class="btn-tumblr" data-id="tu">Tumblr</a>
       <a class="btn-mail" data-id="mail">EMail</a>
-  </div>
+    </div>
   </div>
 
   <div class="container">
@@ -78,27 +83,29 @@
       </tr>
     </thead>
     <tbody>
-      <% for (var i=0; i < 4 ; i++) { %>
+      <% for (var i=0; i < 8 ; i++) { %>
         <tr>
-          <th scope="row"><%= i %></th>
-          <td><%= urls_list[i].timestamp %></td>
-          <td><a href='earlier/<%= urls_list[i].url %>' style="opacity:<%= 1/(i+0.01) %>;">earlier/<%= urls_list[i].url %></a></td>
+          <th scope="row">
+            <%= i %>
+          </th>
+          <td>
+            <%= urls_list[i].timestamp %>
+          </td>
+          <td><a href='earlier/<%= urls_list[i].url %>' style="opacity:<%= 1/(i+0.01) %>;">earlier/<%= urls_list[i].url
+                %></a></td>
         </tr>
-      <% } %>
+        <% } %>
     </tbody>
   </table>
   <% for (var i=4; i < 6 ; i++) { %>
-      <a href='earlier/<%= urls_list[i].url %>' style="opacity:0;">earlier/<%= urls_list[i].url %></a>
-  <% } %>
-  <footer class="bg-light text-center text-lg-start">
-    <!-- Copyright -->
-    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2)">
-      © 2020 Copyright:
-      <!-- <div> TODO: change domain name</div> -->
-      <a class="text-dark" href="https://Secluded.com/">Secluded</a>
-    </div>
-    <!-- Copyright -->
-  </footer>
+    <a href='earlier/<%= urls_list[i].url %>' style="opacity:0;">earlier/<%= urls_list[i].url %></a>
+    <% } %>
+    <footer class="footer" id="contact">
+      <div class="container">
+        <p class="text-muted"><p class="copyright text-muted small">Special thanks to <a src="https://getbootstrap.com/examples/sticky-footer-navbar/">Sticky Bootstrap examples.</a>
+      </div>
+    </footer>
 </body>
 <script src="/javascripts/share-buttons.js"></script>
+
 </html>

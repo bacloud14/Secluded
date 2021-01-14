@@ -11,6 +11,7 @@
     "device-detector-js": "^2.2.7",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
+    "express-rate-limit": "^5.2.3",
     "express-useragent": "^1.0.15",
     "glob": "^7.1.6",
     "helmet": "^4.3.1",
