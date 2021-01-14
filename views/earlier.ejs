@@ -3,6 +3,11 @@
 
 <head>
   <meta charset="utf-8">
+  <meta name="description" content="Free Web tutorials">
+  <meta name="keywords" content="HTML, CSS, JavaScript">
+  <meta name="author" content="Chuck Norris">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -20,8 +25,8 @@
     <div class="container-fluid">
       <ul class="nav navbar-nav">
         <li class="active"><a href="/">Home</a></li>
-        <li><a href="/stats">Stats</a></li>
-        <li><a href="/ganalytics">Google Analytics</a></li>
+        <li><a href="/data">Data</a></li>
+        <li><a href="/spiders">Spiders</a></li>
         <li><a href="/latest">
             < latest>
           </a></li>
@@ -31,23 +36,42 @@
 
   <div class="jumbotron text-center">
     <h1>Secluded</h1>
-    <p>This is an isolated page. No courteous crawler should index directly</p>
+    <p>This is an isolated page. No courteous crawler should index directly. If you want to help us in this study, please share this page in some of your social accounts.</p>
+    <div class="share-btn">
+      <a class="btn-vk" data-id="vk">VK</a>
+      <a class="btn-facebook" data-id="fb">Facebook</a>
+      <a class="btn-twitter" data-id="tw">Twitter</a>
+      <a class="btn-telegram" data-id="tg">Telegram</a>
+      <a class="btn-reddit" data-id="re">Reddit</a>
+      <a class="btn-tumblr" data-id="tu">Tumblr</a>
+      <a class="btn-mail" data-id="mail">EMail</a>
   </div>
+  </div>
+
+  <div class="container-fluid px-sm-1 py-5 mx-auto">
+    <div class="row justify-content-center">
+        <div class="d-flex">
+            <div class="card card-1">
+                <div class="pr-3 row justify-content-end">
+                    <div class="fa fa-heart-o like"></div>
+                </div>
+                <div class="product-pic"> <img class="pic1" src="/images/<%= picURL %>"> </div> <small class="category">Product title</small>
+                <h5 class="product-name">Any product</h5>
+                <div class="row px-3 justify-content-between">
+                    <p class="price">$79.<span class="sm-text">50</span></p>
+                    <div class="stars"> <span class="fa fa-star star-active"></span> <span class="fa fa-star star-active"></span> <span class="fa fa-star star-active"></span> <span class="fa fa-star-o"></span> <span class="fa fa-star-o"></span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
   <div class="container">
     <div class="row content">
       <%= content %>
     </div>
-    <div class="row content">
-      <div class="card mx-auto" style="width: 18rem;">
-        <img src="/images/<%= picURL %>" class="center-block rounded mx-auto d-block" alt="">
-        <div class="card-body">
-          <p class="card-text">Normally it would mean something useful, if not for this test :)</p>
-        </div>
-      </div>
-    </div>
   </div>
 
 </body>
-
+<script src="/javascripts/share-buttons.js"></script>
 </html>

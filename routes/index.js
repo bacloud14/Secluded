@@ -70,6 +70,16 @@ router.get('/', function (req, res, next) {
   });
 });
 
+/* GET data page. */
+router.get('/data', function (req, res, next) {
+  res.render('data', {
+    title: 'Secluded',
+    message: 'We only include bots visits of course (with isBot=true). Data describe bots visits for each endpoint in a specific time. You can find in the list bellow a growing dataset with snapshots each week.',
+    technique: 'Data is like ("resource": "index", "timestamps": "21:20:27", "endpoint": "index", "isMobile": false, "isTablet": false, "isOpera": false, "isIE": false, "isEdge": false, "isIECompatibilityMode": false, "isSafari": false, "isFirefox": true, "isWebkit": false, "isChrome": false, "isDesktop": true, "isBot": false, "isFacebook": false, "silkAccelerated": false, "browser": "Firefox", "version": "84.0", "os": "Windows 10.0", "platform": "Microsoft Windows", "geoIp": {}, "source": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0", "isWechat": false)',
+  });
+});
+
+
 /* GET latest page. */
 router.get('/latest', function (req, res, next) {
   var url = myCache.get("latest").url
@@ -147,8 +157,12 @@ router.get('/sitemap.xml', function (req, res) {
       res.status(500).end()
     }
   });
-
 })
+
+router.get('/robots.txt', function (req, res) {
+  res.type('text/plain');
+  res.send("User-agent: *\nAllow: /$\nDisallow: /");
+});
 
 const low = require('lowdb');
 const zlib = require('zlib');
@@ -162,7 +176,7 @@ const adapter = new FileSync('./db/visitors.json', { format: compress });
 const db2 = low(adapter);
 var moment = require('moment')
 const BotDetector = require("device-detector-js/dist/parsers/bot")
-
+const isbot = require('isbot')
 function visitorLog(req, endpoint, id) {
   // Object to be cached is: req.useragent
   // Just picking some keys.
@@ -194,7 +208,7 @@ function visitorLog(req, endpoint, id) {
     "isWechat": req.useragent.isWechat
   }
   // Detect bot and adding information to requestInfo
-  if (req.useragent.isBot) {
+  if (req.useragent.isBot || isbot(req.get('user-agent'))) {
     const botDetector = new BotDetector();
     const userAgent = req.useragent.source;
     const bot = botDetector.parse(userAgent);

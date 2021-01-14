@@ -11,7 +11,7 @@ body, html {
   height: 100%
 }
 
-#particles-js canvas{
+#particles-js canvas {
   width: 100%;
   height: 100%;
   background: #cecece;
@@ -19,4 +19,88 @@ body, html {
   z-index: -10;
   top: 0;
   left: 0
+}
+
+.share-btn>a {
+  border: 1px solid #ccc;
+  padding: 5px;
+  font-size: 12px;
+  font-family: Verdana, Arial;
+}
+
+.share-btn>a:hover {
+  cursor: pointer;
+}
+
+.card {
+  margin: auto;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 50px;
+  margin-bottom: 50px
+}
+
+.like {
+  color: #757575;
+  font-weight: bold;
+  background-color: #EEEEEE;
+  padding: 7px;
+  border-radius: 50%
+}
+
+.like-checked {
+  color: #E53935
+}
+
+.like:hover {
+  color: #E53935;
+  cursor: pointer
+}
+
+.pic1 {
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  display: block
+}
+
+.product-pic {
+  padding-left: auto;
+  padding-right: auto;
+  width: 100%
+}
+
+.card-1 {
+  padding: 30px 30px 20px 30px !important;
+  border: none;
+  width: 375px
+}
+
+.category {
+  padding-top: 25px;
+  color: grey
+}
+
+.product-name {
+  padding-bottom: 15px;
+  font-family: Florence;
+  font-weight: bold
+}
+
+.price {
+  font-size: 18px
+}
+
+.sm-text {
+  font-size: 14px
+}
+
+.fa-star {
+  color: #FF6F00;
+  cursor: pointer
+}
+
+.fa-star-o {
+  color: #FF6F00;
+  cursor: pointer
 }

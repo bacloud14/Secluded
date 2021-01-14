@@ -36,7 +36,7 @@
 
   <div class="jumbotron text-center">
     <h1>Secluded</h1>
-    <p>This is an isolated page. No courteous crawler should index directly</p>
+    <p>You can find here data collected so far. Download JSON files and do your analysis! </p>
   </div>
 
   <div class="container">
@@ -61,28 +61,6 @@
     </div>
   </div>
 
-  <h3 class="text-center">Ealier Secluded pages</h3>
-  <table class="table">
-    <thead class="thead-light">
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Date of birth</th>
-        <th scope="col">URL</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% for (var i=0; i < 4 ; i++) { %>
-        <tr>
-          <th scope="row"><%= i %></th>
-          <td><%= urls_list[i].timestamp %></td>
-          <td><a href='earlier/<%= urls_list[i].url %>' style="opacity:<%= 1/(i+0.01) %>;">earlier/<%= urls_list[i].url %></a></td>
-        </tr>
-      <% } %>
-    </tbody>
-  </table>
-  <% for (var i=4; i < 6 ; i++) { %>
-      <a href='earlier/<%= urls_list[i].url %>' style="opacity:0;">earlier/<%= urls_list[i].url %></a>
-  <% } %>
   <footer class="bg-light text-center text-lg-start">
     <!-- Copyright -->
     <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2)">
