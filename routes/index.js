@@ -173,7 +173,7 @@ router.get('/sitemap.xml', function (req, res) {
 
 router.get('/robots.txt', function (req, res) {
   res.type('text/plain');
-  res.send("User-agent: *\nAllow: /$\nDisallow: /");
+  res.send("User-agent: *\nAllow: /$\nDisallow: /\nSitemap: https://example.com/sitemap.xml");
 });
 
 const low = require('lowdb');
