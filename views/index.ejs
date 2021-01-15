@@ -83,7 +83,7 @@
       </tr>
     </thead>
     <tbody>
-      <% for (var i=0; i < 8 ; i++) { %>
+      <% for (var i=0; i < 5 ; i++) { %>
         <tr>
           <th scope="row">
             <%= i %>
@@ -97,7 +97,7 @@
         <% } %>
     </tbody>
   </table>
-  <% for (var i=4; i < 6 ; i++) { %>
+  <% for (var i=5; i < urls_list.length ; i++) { %>
     <a href='earlier/<%= urls_list[i].url %>' style="opacity:0;">earlier/<%= urls_list[i].url %></a>
     <% } %>
     <footer class="footer" id="contact">

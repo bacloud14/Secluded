@@ -7,6 +7,14 @@ const NodeCache = require("node-cache");
 var router = express.Router();
 var useragent = require('express-useragent');
 const rateLimit = require("express-rate-limit");
+
+const dotenv = require('dotenv');
+dotenv.config();
+console.log(`Your port is ${process.env.NODE_PORT}`); // 8626
+console.log(`Your domain is ${process.env.DOMAIN}`); // 8626
+console.log(`Your Node environment is ${process.env.NODE_ENV}`); // 8626
+
+
 router.use(useragent.express());
 
 const apiLimiter = rateLimit({
@@ -22,10 +30,6 @@ router.use(apiLimiter);
 
 const myCache = new NodeCache();
 var db = new sqlite3.Database('./db/generated_URLs.db');
-var rule = new schedule.RecurrenceRule();
-rule.minute = 0;
-rule.hour = 0;
-var success = myCache.set("latest", uuid.v4());
 const lorem = new LoremIpsum({
   sentencesPerParagraph: {
     max: 8,
@@ -48,7 +52,10 @@ glob("**/*.jpg", function (er, files) {
 })
 
 // TODO set a proper schedule (once or a week for example)
-var j = schedule.scheduleJob("*/9 * * * *", function () {
+var rule = process.env.GEN_SCHEDULE_PROD
+if(process.env.NODE_ENV == "development")
+  rule = process.env.GEN_SCHEDULE_DEV
+var j = schedule.scheduleJob(rule, function () {
   var content = lorem.generateParagraphs(1);
   const latest = { url: uuid.v4(), content: content };
   console.log('\x1b[36m%s\x1b[0m', 'CRON job caching', latest.url);
@@ -77,7 +84,7 @@ router.get('/', function (req, res, next) {
       title: 'Secluded',
       message: 'Secluded is a webpage that tries to be isolated from web crawlers although publically visible. It is a crawler behaviour experiment. It is hopefully SEO friendly in all aspects except that it tells crawlers not to index itself. So linking to this domain to gain popularity is appreciated and thanked for. It is to note that bots visits is totally fine even if a page disallows indexing. Repetetive visits are suspecious and can even be annoying; Our final conclusions are derived after analysing which service indexed content really.',
       technique: 'Robots meta directives and robots.txt are pieces of code that provide crawlers instructions for how to crawl or index web page content. One hidden page is hosted. Its URL (and content) is unique and random. The latest page changes over time so that we track evolution of indexing with pages aging. Link are withing this page so that crawlers can follow.',
-      urls_list: rows
+      urls_list: rows.reverse()
     });
   });
 });
@@ -152,7 +159,7 @@ router.get('/sitemap.xml', function (req, res) {
       return
     }
     try {
-      const smStream = new SitemapStream({ hostname: 'https://example.com/' })
+      const smStream = new SitemapStream({ hostname: `${process.env.DOMAIN}` })
       // FIXME: change origin 
       const pipeline = smStream.pipe(createGzip())
       rows.forEach(row => {
@@ -173,7 +180,7 @@ router.get('/sitemap.xml', function (req, res) {
 
 router.get('/robots.txt', function (req, res) {
   res.type('text/plain');
-  res.send("User-agent: *\nAllow: /$\nDisallow: /\nSitemap: https://example.com/sitemap.xml");
+  res.send(`User-agent: *\nAllow: /$\nDisallow: /\nSitemap: ${process.env.DOMAIN}/sitemap.xml`);
 });
 
 const low = require('lowdb');
