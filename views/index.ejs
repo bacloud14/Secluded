@@ -27,7 +27,7 @@
         <li class="active"><a href="/">Home</a></li>
         <li><a href="/data">Data</a></li>
         <li><a href="https://www.imperva.com/blog/most-active-good-bots/">Spiders</a></li>
-        <li><a href="/latest">Latest</a></li>
+        <!-- <li><a href="/latest">Latest</a></li> -->
       </ul>
       <ul class="nav navbar-nav">
         <li class="nav-link"><a href="https://github.com/bacloud14/Secluded">fork</a></li>
@@ -83,7 +83,7 @@
       </tr>
     </thead>
     <tbody>
-      <% for (var i=0; i < 5 ; i++) { %>
+      <% for (var i=0; urls_list.length > 0 && i < 5 ; i++) { %>
         <tr>
           <th scope="row">
             <%= i %>
@@ -102,7 +102,7 @@
     <% } %>
     <footer class="footer" id="contact">
       <div class="container">
-        <p class="text-muted"><p class="copyright text-muted small">Copyright &copy; <a href="https://www.linkedin.com/in/abderrahim-benseguane-85018413a/" target="_blank">Abderrahim Benseguane</a> 2021 | <a href="https://github.com/bacloud14/Secluded" target="_blank">Github</a>
+        <p class="text-muted"><p class="copyright text-muted small">Copyright &copy; <a href="https://www.linkedin.com/in/abderrahim-benseguane-85018413a/" rel="noreferrer" target="_blank">Abderrahim Benseguane</a> 2021 | <a href="https://github.com/bacloud14/Secluded" rel="noreferrer" target="_blank">Github</a>
         </div>
     </footer>
 </body>

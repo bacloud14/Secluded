@@ -1,6 +1,7 @@
 var createError = require('http-errors');
 var express = require('express');
 const helmet = require("helmet");
+var favicon = require('serve-favicon')
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
@@ -22,6 +23,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(helmet());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

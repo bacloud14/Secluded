@@ -10,7 +10,7 @@ const rateLimit = require("express-rate-limit");
 
 const dotenv = require('dotenv');
 dotenv.config();
-console.log(`Your port is ${process.env.NODE_PORT}`); // 8626
+console.log(`Your port is ${process.env.PORT}`); // 8626
 console.log(`Your domain is ${process.env.DOMAIN}`); // 8626
 console.log(`Your Node environment is ${process.env.NODE_ENV}`); // 8626
 
@@ -21,7 +21,7 @@ const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
   headers: true,
-  handler: function(req, res){
+  handler: function (req, res) {
     visitorLog(req, '.', '.', true);
     res.status(429).send("too many requests");
   }
@@ -30,6 +30,7 @@ router.use(apiLimiter);
 
 const myCache = new NodeCache();
 var db = new sqlite3.Database('./db/generated_URLs.db');
+db.run("CREATE TABLE IF NOT EXISTS URL (_id TEXT primary KEY, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, url TEXT, content TEXT)");
 const lorem = new LoremIpsum({
   sentencesPerParagraph: {
     max: 8,
@@ -53,7 +54,7 @@ glob("**/*.jpg", function (er, files) {
 
 // TODO set a proper schedule (once or a week for example)
 var rule = process.env.GEN_SCHEDULE_PROD
-if(process.env.NODE_ENV == "development")
+if (process.env.NODE_ENV == "development")
   rule = process.env.GEN_SCHEDULE_DEV
 var j = schedule.scheduleJob(rule, function () {
   var content = lorem.generateParagraphs(1);
@@ -99,49 +100,49 @@ router.get('/data', function (req, res, next) {
 });
 
 
-/* GET latest page. */
-router.get('/latest', function (req, res, next) {
-  var url = myCache.get("latest").url
-  visitorLog(req, 'latest', url, false);
-  var content = myCache.get("latest").content;
-  console.log('\x1b[33m%s\x1b[0m', "Latest found ==>  " + url)
-  res.render('earlier', {
-    title: 'Secluded',
-    content: content
-  });
-});
+// /* GET latest page. */
+// router.get('/latest', function (req, res, next) {
+//   var url = myCache.get("latest").url
+//   visitorLog(req, 'latest', url, false);
+//   var content = myCache.get("latest").content;
+//   console.log('\x1b[33m%s\x1b[0m', "Latest found ==>  " + url)
+//   res.render('earlier', {
+//     title: 'Secluded',
+//     content: content
+//   });
+// });
 
 /* GET earlier page. */
 router.get('/earlier/:id', function (req, res, next) {
   visitorLog(req, 'ealier', req.params.id, false);
-  if (myCache.has("latest") && req.params.id == myCache.get("latest").url) {
-    console.log("Found again ==>  " + req.params.id);
-    var content = myCache.get("latest").content;
-    res.send(content);
-  } else {
-    db.serialize(function () {
-      let sql = `SELECT rowid, _id, timestamp, url, content FROM URL WHERE _id = ?`;
-      let url = req.params.id;
-      db.get(sql, [url], (err, row) => {
-        if (err) {
-          return console.error(err.message);
-        }
-        if (row) {
-          res.render('earlier', {
-            title: 'Secluded',
-            content: row.content,
-            picURL: imageList[row.rowid % 30]
-          });
-        } else {
-          console.log('\x1b[31m', `No URL found with the id: ${url}`);
-          res.status(404).render('404', {
-            title: 'Secluded',
-            error_message: `No URL found with the id: ${url}`
-          });
-        }
-      });
+  // if (myCache.has("latest") && req.params.id == myCache.get("latest").url) {
+  //   console.log("Found again ==>  " + req.params.id);
+  //   var content = myCache.get("latest").content;
+  //   res.send(content);
+  // } else {
+  db.serialize(function () {
+    let sql = `SELECT rowid, _id, timestamp, url, content FROM URL WHERE _id = ?`;
+    let url = req.params.id;
+    db.get(sql, [url], (err, row) => {
+      if (err) {
+        return console.error(err.message);
+      }
+      if (row) {
+        res.render('earlier', {
+          title: 'Secluded',
+          content: row.content,
+          picURL: imageList[row.rowid % 30]
+        });
+      } else {
+        console.log('\x1b[31m', `No URL found with the id: ${url}`);
+        res.status(404).render('404', {
+          title: 'Secluded',
+          error_message: `No URL found with the id: ${url}`
+        });
+      }
     });
-  }
+  });
+  // }
 });
 
 const { SitemapStream, streamToPromise } = require('sitemap')
@@ -193,6 +194,7 @@ const compress = {
 const FileSync = require('lowdb/adapters/FileSync');
 const adapter = new FileSync('./db/visitors.json', { format: compress });
 const db2 = low(adapter);
+db2.defaults({ useragents: [] }).write();
 var moment = require('moment')
 const BotDetector = require("device-detector-js/dist/parsers/bot")
 const isbot = require('isbot')
@@ -233,14 +235,17 @@ function visitorLog(req, endpoint, id, critical) {
     const userAgent = req.useragent.source;
     const bot = botDetector.parse(userAgent);
     requestInfo["botInfo"] = bot
-  }
-  db2.defaults({ useragents: [] }).write();
-  db2.get('useragents')
+    db2.get('useragents')
     .push(requestInfo)
     .write();
+  }else if(process.env.NODE_ENV =='development'){
+    db2.get('useragents')
+    .push(requestInfo)
+    .write();
+  }
 }
 
-// FIXME cntl-c exit (and others ?) does not exit properly
+// FIXME Cntl-c exit (and others ?) does not exit properly
 process.on('SIGINT', () => {
   j.cancel();
   db.close();
