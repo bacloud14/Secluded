@@ -93,10 +93,12 @@ router.use(function (req, res, next) {
     next();
   var reversed_ip = ip.split('.').reverse().join('.');
   dns.resolve4([process.env.HONEYPOT_KEY, reversed_ip, 'dnsbl.httpbl.org'].join('.'), function (err, addresses) {
+    if (!addresses)
+      next();
     var _response = addresses.toString().split('.').map(Number);
     var test = (_response[0] === 127 && _response[3] > 0) //visitor_type[_response[3]]
     if (test)
-      res.send({ msg: 'we hate spam to begin with!' }); 
+      res.send({ msg: 'we hate spam to begin with!' });
     next();
   });
 });
