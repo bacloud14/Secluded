@@ -73,6 +73,34 @@ var j = schedule.scheduleJob(rule, function () {
   });
 });
 
+var dns = require('dns');
+var visitor_type = {
+  0: 'Search Engine Bot',
+  1: 'Suspicious',
+  2: 'Harvester',
+  3: 'Suspicious, Harvester',
+  4: 'Comment Spammer',
+  5: 'Suspicious, Comment Spammer',
+  6: 'Harvester, Comment Spammer',
+  7: 'Suspicious, Harvester, Comment Spammer'
+};
+router.use(function (req, res, next) {
+  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  if (ip.substr(0, 7) == "::ffff:") {
+    ip = ip.substr(7)
+  }
+  if (process.env.NODE_ENV == "development" || ip.split('.')[0] == "127")
+    next();
+  var reversed_ip = ip.split('.').reverse().join('.');
+  dns.resolve4([process.env.HONEYPOT_KEY, reversed_ip, 'dnsbl.httpbl.org'].join('.'), function (err, addresses) {
+    var _response = addresses.toString().split('.').map(Number);
+    var test = (_response[0] === 127 && _response[3] > 0) //visitor_type[_response[3]]
+    if (test)
+      res.send({ msg: 'we hate spam to begin with!' }); 
+    next();
+  });
+});
+
 /* GET home page. */
 router.get('/', function (req, res, next) {
   visitorLog(req, 'index', 'index', false);
@@ -236,12 +264,12 @@ function visitorLog(req, endpoint, id, critical) {
     const bot = botDetector.parse(userAgent);
     requestInfo["botInfo"] = bot
     db2.get('useragents')
-    .push(requestInfo)
-    .write();
-  }else if(process.env.NODE_ENV =='development'){
+      .push(requestInfo)
+      .write();
+  } else if (process.env.NODE_ENV == 'development') {
     db2.get('useragents')
-    .push(requestInfo)
-    .write();
+      .push(requestInfo)
+      .write();
   }
 }
 
