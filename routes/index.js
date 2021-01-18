@@ -13,7 +13,30 @@ dotenv.config();
 console.log(`Your port is ${process.env.PORT}`); // 8626
 console.log(`Your domain is ${process.env.DOMAIN}`); // 8626
 console.log(`Your Node environment is ${process.env.NODE_ENV}`); // 8626
+var globals = require('../globals');
 
+{
+  const { Client } = require('pg')
+  const psql_client = new Client({
+    host: 'localhost',
+    port: 5433,
+    user: 'postgres',
+    password: '',
+  })
+  psql_client.connect(err => {
+    if (err) {
+      console.error('connection error', err.stack)
+    } else {
+      console.log('connected')
+    }
+  })
+
+  psql_client.query('SELECT $1::text as message', ['Hello world!'], (err, res) => {
+    console.log(err ? err.stack : res.rows[0].message) // Hello World!
+    // psql_client.end()
+  })
+
+}
 
 router.use(useragent.express());
 
