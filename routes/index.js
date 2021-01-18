@@ -1,13 +1,11 @@
 var express = require('express');
-const LoremIpsum = require("lorem-ipsum").LoremIpsum;
+
 var schedule = require('node-schedule');
 var uuid = require('node-uuid');
 var sqlite3 = require('sqlite3').verbose();
 const NodeCache = require("node-cache");
 var router = express.Router();
 var useragent = require('express-useragent');
-const rateLimit = require("express-rate-limit");
-
 const dotenv = require('dotenv');
 dotenv.config();
 console.log(`Your port is ${process.env.PORT}`); // 8626
@@ -16,14 +14,7 @@ console.log(`Your Node environment is ${process.env.NODE_ENV}`); // 8626
 var globals = require('../globals');
 
 {
-  const { Client } = require('pg')
-  const psql_client = new Client({
-    host: 'localhost',
-    port: 5433,
-    user: 'postgres',
-    password: '',
-  })
-  psql_client.connect(err => {
+  globals.psql_client.connect(err => {
     if (err) {
       console.error('connection error', err.stack)
     } else {
@@ -31,39 +22,22 @@ var globals = require('../globals');
     }
   })
 
-  psql_client.query('SELECT $1::text as message', ['Hello world!'], (err, res) => {
+  globals.psql_client.query('SELECT $1::text as message', ['Hello world!'], (err, res) => {
     console.log(err ? err.stack : res.rows[0].message) // Hello World!
     // psql_client.end()
   })
-
 }
 
 router.use(useragent.express());
-
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  headers: true,
-  handler: function (req, res) {
-    visitorLog(req, '.', '.', true);
-    res.status(429).send("too many requests");
-  }
-});
-router.use(apiLimiter);
+router.use(globals.apiLimiter);
 
 const myCache = new NodeCache();
-var db = new sqlite3.Database('./db/generated_URLs.db');
-db.run("CREATE TABLE IF NOT EXISTS URL (_id TEXT primary KEY, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, url TEXT, content TEXT)");
-const lorem = new LoremIpsum({
-  sentencesPerParagraph: {
-    max: 8,
-    min: 4
-  },
-  wordsPerSentence: {
-    max: 16,
-    min: 4
-  }
-});
+if (true) {
+  var db = new sqlite3.Database('./db/generated_URLs.db');
+  db.run("CREATE TABLE IF NOT EXISTS URL (_id TEXT primary KEY, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, url TEXT, content TEXT)");
+} else {
+
+}
 
 var glob = require("glob")
 var imageList = [];
@@ -80,67 +54,67 @@ var rule = process.env.GEN_SCHEDULE_PROD
 if (process.env.NODE_ENV == "development")
   rule = process.env.GEN_SCHEDULE_DEV
 var j = schedule.scheduleJob(rule, function () {
-  var content = lorem.generateParagraphs(1);
+  var content = globals.lorem.generateParagraphs(1);
   const latest = { url: uuid.v4(), content: content };
   console.log('\x1b[36m%s\x1b[0m', 'CRON job caching', latest.url);
-  db.serialize(function () {
-    db.run("CREATE TABLE IF NOT EXISTS URL (_id TEXT primary KEY, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, url TEXT, content TEXT)");
-    db.run("INSERT INTO URL(_id, url, content) VALUES (?,?,?)", [latest.url, latest.url, latest.content], function (err) {
-      if (err) {
-        return console.log(err.message);
-      }
-      // Get the last insert id
-      console.log('\x1b[36m%s\x1b[0m', `A row has been inserted with rowid ${this.lastID}`);
-      success = myCache.set("latest", latest);
+  if (true)
+    db.serialize(function () {
+      db.run("CREATE TABLE IF NOT EXISTS URL (_id TEXT primary KEY, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, url TEXT, content TEXT)");
+      db.run("INSERT INTO URL(_id, url, content) VALUES (?,?,?)", [latest.url, latest.url, latest.content], function (err) {
+        if (err) {
+          return console.log(err.message);
+        }
+        // Get the last insert id
+        console.log('\x1b[36m%s\x1b[0m', `A row has been inserted with rowid ${this.lastID}`);
+        success = myCache.set("latest", latest);
+      });
     });
-  });
+  else {
+
+  }
 });
 
 var dns = require('dns');
-var visitor_type = {
-  0: 'Search Engine Bot',
-  1: 'Suspicious',
-  2: 'Harvester',
-  3: 'Suspicious, Harvester',
-  4: 'Comment Spammer',
-  5: 'Suspicious, Comment Spammer',
-  6: 'Harvester, Comment Spammer',
-  7: 'Suspicious, Harvester, Comment Spammer'
-};
+
 router.use(function (req, res, next) {
   var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   if (ip.substr(0, 7) == "::ffff:") {
     ip = ip.substr(7)
   }
+
   if (process.env.NODE_ENV == "development" || ip.split('.')[0] == "127")
-    next();
+    return next();
   var reversed_ip = ip.split('.').reverse().join('.');
   dns.resolve4([process.env.HONEYPOT_KEY, reversed_ip, 'dnsbl.httpbl.org'].join('.'), function (err, addresses) {
     if (!addresses)
-      next();
+      return next();
     var _response = addresses.toString().split('.').map(Number);
     var test = (_response[0] === 127 && _response[3] > 0) //visitor_type[_response[3]]
     if (test)
       res.send({ msg: 'we hate spam to begin with!' });
-    next();
+    return next();
   });
 });
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
   visitorLog(req, 'index', 'index', false);
-  db.all(`SELECT _id, timestamp, url, content FROM URL ORDER BY date(_id)`, [], (err, rows) => {
-    if (err) {
-      console.log(err.message);
-      throw err;
-    }
-    res.render('index', {
-      title: 'Secluded',
-      message: 'Secluded is a webpage that tries to be isolated from web crawlers although publically visible. It is a crawler behaviour experiment. It is hopefully SEO friendly in all aspects except that it tells crawlers not to index itself. So linking to this domain to gain popularity is appreciated and thanked for. It is to note that bots visits is totally fine even if a page disallows indexing. Repetetive visits are suspecious and can even be annoying; Our final conclusions are derived after analysing which service indexed content really.',
-      technique: 'Robots meta directives and robots.txt are pieces of code that provide crawlers instructions for how to crawl or index web page content. One hidden page is hosted. Its URL (and content) is unique and random. The latest page changes over time so that we track evolution of indexing with pages aging. Link are withing this page so that crawlers can follow.',
-      urls_list: rows.reverse()
+  if (true)
+    db.all(`SELECT _id, timestamp, url, content FROM URL ORDER BY date(_id)`, [], (err, rows) => {
+      if (err) {
+        console.log(err.message);
+        throw err;
+      }
+      res.render('index', {
+        title: 'Secluded',
+        message: 'Secluded is a webpage that tries to be isolated from web crawlers although publically visible. It is a crawler behaviour experiment. It is hopefully SEO friendly in all aspects except that it tells crawlers not to index itself. So linking to this domain to gain popularity is appreciated and thanked for. It is to note that bots visits is totally fine even if a page disallows indexing. Repetetive visits are suspecious and can even be annoying; Our final conclusions are derived after analysing which service indexed content really.',
+        technique: 'Robots meta directives and robots.txt are pieces of code that provide crawlers instructions for how to crawl or index web page content. One hidden page is hosted. Its URL (and content) is unique and random. The latest page changes over time so that we track evolution of indexing with pages aging. Link are withing this page so that crawlers can follow.',
+        urls_list: rows.reverse()
+      });
     });
-  });
+  else {
+
+  }
 });
 
 /* GET data page. */
@@ -168,34 +142,33 @@ router.get('/data', function (req, res, next) {
 /* GET earlier page. */
 router.get('/earlier/:id', function (req, res, next) {
   visitorLog(req, 'ealier', req.params.id, false);
-  // if (myCache.has("latest") && req.params.id == myCache.get("latest").url) {
-  //   console.log("Found again ==>  " + req.params.id);
-  //   var content = myCache.get("latest").content;
-  //   res.send(content);
-  // } else {
-  db.serialize(function () {
-    let sql = `SELECT rowid, _id, timestamp, url, content FROM URL WHERE _id = ?`;
-    let url = req.params.id;
-    db.get(sql, [url], (err, row) => {
-      if (err) {
-        return console.error(err.message);
-      }
-      if (row) {
-        res.render('earlier', {
-          title: 'Secluded',
-          content: row.content,
-          picURL: imageList[row.rowid % 30]
-        });
-      } else {
-        console.log('\x1b[31m', `No URL found with the id: ${url}`);
-        res.status(404).render('404', {
-          title: 'Secluded',
-          error_message: `No URL found with the id: ${url}`
-        });
-      }
+
+  if (true)
+    db.serialize(function () {
+      let sql = `SELECT rowid, _id, timestamp, url, content FROM URL WHERE _id = ?`;
+      let url = req.params.id;
+      db.get(sql, [url], (err, row) => {
+        if (err) {
+          return console.error(err.message);
+        }
+        if (row) {
+          res.render('earlier', {
+            title: 'Secluded',
+            content: row.content,
+            picURL: imageList[row.rowid % 30]
+          });
+        } else {
+          console.log('\x1b[31m', `No URL found with the id: ${url}`);
+          res.status(404).render('404', {
+            title: 'Secluded',
+            error_message: `No URL found with the id: ${url}`
+          });
+        }
+      });
     });
-  });
-  // }
+  else {
+
+  }
 });
 
 const { SitemapStream, streamToPromise } = require('sitemap')
