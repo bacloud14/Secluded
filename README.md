@@ -1,6 +1,6 @@
 # Secluded
 
-Secluded is a webpage that tries to be isolated from web crawers although publically visible. It is a crawler behaviour experiment.
+Secluded is a webpage that tries to be isolated from web crawlers although publically visible. It is a crawler behaviour experiment.
 
 It is hopefully SEO friendly in all aspects except that it tells crawlers not to index itself. (So linking to this domain to gain popularity is appreciated and thanked for (not yet deployed)).
 
@@ -32,7 +32,7 @@ Please know that I am not a keen NodeJS developer, but I successfully made this 
 
 If you contribute, please consider that I can merge and publish a new release under one channel or another. It will be 100% free although I can add ads to generate some coffee expenses :)
 
-If you want to maintain the project with me; You can alwayse ask.
+If you want to maintain the project with me; You can always ask.
 
 Please keep it fair if you want to deploy anywhere; Ask for permission.
 
