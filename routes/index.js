@@ -47,8 +47,12 @@ if (false) {
   db.run(globals.sqlite.CREATE_TABLE_IF_NOT_EXISTS);
 } else {
   globals.psql_client.query(globals.pgsql.CREATE_TABLE_URL_IF_NOT_EXISTS, (err, res) => {
-    console.log(err ? err.stack : "new table created!");
+    console.log(err ? err.stack : "new table URL created!");
   });
+  globals.psql_client.query(globals.pgsql.CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS, (err, res) => {
+    console.log(err ? err.stack : "new table USERAGENT created!");
+  });
+
 }
 
 var glob = require("glob")
@@ -82,7 +86,7 @@ var j = schedule.scheduleJob(rule, function () {
     });
   else {
     globals.psql_client.query(globals.pgsql.INSERT_INTO_URL, [latest.url, latest.url, latest.content], (err, res) => {
-      console.log(err ? err.stack : '\x1b[36m%s\x1b[0m', "New table created!");
+      console.log(err ? err.stack : '\x1b[43m', "New URL created!");
     })
   }
 });
@@ -271,21 +275,25 @@ function visitorLog(req, endpoint, id, critical) {
     "isWechat": req.useragent.isWechat,
     "critical": critical
   }
-  
-  // Detect bot and adding information to requestInfo
-  if (req.useragent.isBot || isbot(req.get('user-agent'))) {
-    const botDetector = new BotDetector();
-    const userAgent = req.useragent.source;
-    const bot = botDetector.parse(userAgent);
-    requestInfo["botInfo"] = bot
-    db2.get('useragents')
-      .push(requestInfo)
-      .write();
-  } else if (process.env.NODE_ENV == 'development') {
-    
-    db2.get('useragents')
-      .push(requestInfo)
-      .write();
+  if (true) {
+    globals.psql_client.query(globals.pgsql.INSERT_INTO_USERAGENT, [id, endpoint, req.useragent.isMobile, req.useragent.isTablet, req.useragent.isOpera, req.useragent.isIE, req.useragent.isEdge, req.useragent.isIECompatibilityMode, req.useragent.isSafari, req.useragent.isFirefox, req.useragent.isWebkit, req.useragent.isChrome, req.useragent.isDesktop, req.useragent.isBot, req.useragent.isFacebook, req.useragent.silkAccelerated, req.useragent.browser, req.useragent.version, req.useragent.os, req.useragent.platform, req.useragent.source, req.useragent.isWechat, critical], (err, res) => {
+      console.log(err ? err.stack : '\x1b[43m', "New visitor created!");
+    })
+  } else {
+    // Detect bot and adding information to requestInfo
+    if (req.useragent.isBot || isbot(req.get('user-agent'))) {
+      const botDetector = new BotDetector();
+      const userAgent = req.useragent.source;
+      const bot = botDetector.parse(userAgent);
+      requestInfo["botInfo"] = bot
+      db2.get('useragents')
+        .push(requestInfo)
+        .write();
+    } else if (process.env.NODE_ENV == 'development') {
+      db2.get('useragents')
+        .push(requestInfo)
+        .write();
+    }
   }
 }
 

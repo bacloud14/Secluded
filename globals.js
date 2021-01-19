@@ -34,14 +34,21 @@ globals['lowdb'] = {
 
 globals['pgsql'] = {
   "CREATE_DATABASE": "CREATE DATABASE secluded WITH OWNER = postgres ENCODING = 'UTF8' LC_COLLATE = 'English_United States.1252' LC_CTYPE = 'English_United States.1252' TABLESPACE = pg_default CONNECTION LIMIT = -1;",
+
   "CREATE_SCHEMA": "CREATE SCHEMA 'STATIC_CONTENT' AUTHORIZATION postgres;",
+
   "CREATE_TABLE_URL_IF_NOT_EXISTS": 'CREATE TABLE IF NOT EXISTS "STATIC_CONTENT"."URL" (_id text NOT NULL, "timestamp" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP, url text NOT NULL, content text COLLATE pg_catalog."default" NOT NULL, CONSTRAINT "URL_pkey" PRIMARY KEY (_id))',
+
   "CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS": 'CREATE TABLE IF NOT EXISTS "STATIC_CONTENT"."USERAGENT" ( resource text NOT NULL, timestamps time without time zone NOT NULL, endpoint text NOT NULL, "isMobile" boolean, "isTablet" boolean, "isOpera" boolean, "isIE" boolean, "isEdge" boolean, "isIECompatibilityMode" boolean, "isSafari" boolean, "isFirefox" boolean, "isWebkit" boolean, "isChrome" boolean, "isDesktop" boolean, "isBot" boolean, "isFacebook" boolean, "silkAccelerated" boolean, browser text, version text, os text, platform text, source text, "isWechat" boolean, critical boolean );  ALTER TABLE "STATIC_CONTENT"."USERAGENT" OWNER to postgres;',
+
   "INSERT_INTO_URL": 'INSERT INTO "STATIC_CONTENT"."URL"(_id, url, content, "timestamp") VALUES ($1, $2, $3, CURRENT_TIMESTAMP);',
   "SELECT_ALL": 'SELECT _id, "timestamp", url, content FROM "STATIC_CONTENT"."URL" ORDER BY("timestamp")',
   "SELECT_ONE": 'SELECT ctid, _id, "timestamp", url, content FROM "STATIC_CONTENT"."URL" WHERE _id = $1',
-  "INSERT_INTO_USERAGENT": 'INSERT INTO "STATIC_CONTENT"."USERAGENT" (resource, timestamps, endpoint, "isMobile", "isTablet", "isOpera", "isIE", "isEdge", "isIECompatibilityMode", "isSafari", "isFirefox", "isWebkit", "isChrome", "isDesktop", "isBot", "isFacebook", "silkAccelerated", browser, version, os, platform, source, "isWechat", critical) VALUES ($1, CURRENT_TIMESTAMP, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23);'
+
+  "INSERT_INTO_USERAGENT": 'INSERT INTO "STATIC_CONTENT"."USERAGENT" (timestamps, resource, endpoint, "isMobile", "isTablet", "isOpera", "isIE", "isEdge", "isIECompatibilityMode", "isSafari", "isFirefox", "isWebkit", "isChrome", "isDesktop", "isBot", "isFacebook", "silkAccelerated", browser, version, os, platform, source, "isWechat", critical) VALUES (CURRENT_TIMESTAMP, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23);'
+
 };
+
 
 const { Client } = require('pg')
 globals['psql_client'] = new Client({
