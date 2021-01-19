@@ -1,5 +1,5 @@
 var express = require('express');
-
+const rateLimit = require("express-rate-limit");
 var schedule = require('node-schedule');
 var uuid = require('node-uuid');
 var sqlite3 = require('sqlite3').verbose();
@@ -29,12 +29,22 @@ var globals = require('../globals');
 }
 
 router.use(useragent.express());
-router.use(globals.apiLimiter);
+var apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  headers: true,
+  handler: function (req, res) {
+    visitorLog(req, '.', '.', true);
+    res.status(429).send("too many requests");
+  }
+});
+
+router.use(apiLimiter);
 
 const myCache = new NodeCache();
 if (false) {
   var db = new sqlite3.Database('./db/generated_URLs.db');
-  db.run("CREATE TABLE IF NOT EXISTS URL (_id TEXT primary KEY, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, url TEXT, content TEXT)");
+  db.run(globals.sqlite.CREATE_TABLE_IF_NOT_EXISTS);
 } else {
   globals.psql_client.query(globals.pgsql.CREATE_TABLE_IF_NOT_EXISTS, (err, res) => {
     console.log(err ? err.stack : "new table created!");
@@ -61,7 +71,7 @@ var j = schedule.scheduleJob(rule, function () {
   console.log('\x1b[36m%s\x1b[0m', 'CRON job caching', latest.url);
   if (false)
     db.serialize(function () {
-      db.run("INSERT INTO URL(_id, url, content) VALUES (?,?,?)", [latest.url, latest.url, latest.content], function (err) {
+      db.run(globals.sqlite.INSERT_URL, [latest.url, latest.url, latest.content], function (err) {
         if (err) {
           return console.log(err.message);
         }
@@ -103,39 +113,33 @@ router.use(function (req, res, next) {
 router.get('/', function (req, res, next) {
   visitorLog(req, 'index', 'index', false);
   if (false)
-    db.all(`SELECT _id, timestamp, url, content FROM URL ORDER BY date(_id)`, [], (err, rows) => {
+    db.all(globals.sqlite.SELECT_URLS, [], (err, rows) => {
       if (err) {
         console.log(err.message);
         throw err;
       }
-      res.render('index', {
-        title: 'Secluded',
-        message: 'Secluded is a webpage that tries to be isolated from web crawlers although publically visible. It is a crawler behaviour experiment. It is hopefully SEO friendly in all aspects except that it tells crawlers not to index itself. So linking to this domain to gain popularity is appreciated and thanked for. It is to note that bots visits is totally fine even if a page disallows indexing. Repetetive visits are suspecious and can even be annoying; Our final conclusions are derived after analysing which service indexed content really.',
-        technique: 'Robots meta directives and robots.txt are pieces of code that provide crawlers instructions for how to crawl or index web page content. One hidden page is hosted. Its URL (and content) is unique and random. The latest page changes over time so that we track evolution of indexing with pages aging. Link are withing this page so that crawlers can follow.',
-        urls_list: rows.reverse()
-      });
+      res.render('index', Object.assign(globals['index/message'], { urls_list: rows.reverse() }));
     });
   else {
     globals.psql_client.query(globals.pgsql.SELECT_ALL, (err, result) => {
       console.log(err ? err.stack : '\x1b[36m%s\x1b[0m', "Got all rows!", result.rows[0]);
-      res.render('index', {
-        title: 'Secluded',
-        message: 'Secluded is a webpage that tries to be isolated from web crawlers although publically visible. It is a crawler behaviour experiment. It is hopefully SEO friendly in all aspects except that it tells crawlers not to index itself. So linking to this domain to gain popularity is appreciated and thanked for. It is to note that bots visits is totally fine even if a page disallows indexing. Repetetive visits are suspecious and can even be annoying; Our final conclusions are derived after analysing which service indexed content really.',
-        technique: 'Robots meta directives and robots.txt are pieces of code that provide crawlers instructions for how to crawl or index web page content. One hidden page is hosted. Its URL (and content) is unique and random. The latest page changes over time so that we track evolution of indexing with pages aging. Link are withing this page so that crawlers can follow.',
-        urls_list: result.rows.reverse()
-      });
+      res.render('index', Object.assign(globals['index/message'], { urls_list: result.rows.reverse() }));
     })
   }
 });
 
 /* GET data page. */
 router.get('/data', function (req, res, next) {
-  res.render('data', {
-    title: 'Secluded',
-    message: 'We only include bots visits of course (with isBot=true). Data describe bots visits for each endpoint in a specific time. You can find in the list bellow a growing dataset with snapshots each week. It is to note that bots visits is totally fine even if a page disallows indexing. Repetetive visits are suspecious and can even be annoying; Our final conclusions are derived after analysing which service indexed content really.',
-    technique: 'Data is like ("resource": "index", "timestamps": "21:20:27", "endpoint": "index", "isMobile": false, "isTablet": false, "isOpera": false, "isIE": false, "isEdge": false, "isIECompatibilityMode": false, "isSafari": false, "isFirefox": true, "isWebkit": false, "isChrome": false, "isDesktop": true, "isBot": false, "isFacebook": false, "silkAccelerated": false, "browser": "Firefox", "version": "84.0", "os": "Windows 10.0", "platform": "Microsoft Windows", "geoIp": {}, "source": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0", "isWechat": false)',
-  });
+  res.render('data', globals['data/message']);
 });
+
+function notFound(res, url) {
+  console.log('\x1b[31m', `No URL found with the id: ${url}`);
+  res.status(404).render('404', {
+    title: 'Secluded',
+    error_message: `No URL found with the id: ${url}`
+  });
+}
 
 /* GET earlier page. */
 router.get('/earlier/:id', function (req, res, next) {
@@ -143,24 +147,18 @@ router.get('/earlier/:id', function (req, res, next) {
   let url = req.params.id;
   if (false)
     db.serialize(function () {
-      let sql = `SELECT rowid, _id, timestamp, url, content FROM URL WHERE _id = ?`;
-      db.get(sql, [url], (err, row) => {
+      db.get(globals.sqlite.SELECT_ONE_URL, [url], (err, row) => {
         if (err) {
           return console.error(err.message);
         }
-        if (row) {
+        if (row)
           res.render('earlier', {
             title: 'Secluded',
             content: row.content,
             picURL: imageList[row.rowid % 30]
           });
-        } else {
-          console.log('\x1b[31m', `No URL found with the id: ${url}`);
-          res.status(404).render('404', {
-            title: 'Secluded',
-            error_message: `No URL found with the id: ${url}`
-          });
-        }
+        else
+          notFound(res, url);
       });
     });
   else {
@@ -175,49 +173,53 @@ router.get('/earlier/:id', function (req, res, next) {
           content: result.rows[0].content,
           picURL: imageList[parseInt(match[2]) % 30]
         });
-      } else {
-        console.log('\x1b[31m', `No URL found with the id: ${url}`);
-        res.status(404).render('404', {
-          title: 'Secluded',
-          error_message: `No URL found with the id: ${url}`
-        });
-      }
+      } else
+        notFound(res, url);
     })
   }
 });
 
 const { SitemapStream, streamToPromise } = require('sitemap')
 const { createGzip } = require('zlib')
-
 let sitemap
+
+function generateSitemap(res, rows) {
+  res.header('Content-Type', 'application/xml');
+  res.header('Content-Encoding', 'gzip');
+  // if we have a cached entry send it
+  if (sitemap) {
+    res.send(sitemap)
+    return
+  }
+  try {
+    const smStream = new SitemapStream({ hostname: `${process.env.DOMAIN}` })
+    // FIXME: change origin 
+    const pipeline = smStream.pipe(createGzip())
+    rows.forEach(row => {
+      smStream.write({ url: `earlier/${row.url}/`, changefreq: 'monthly', priority: 0.1 });
+    })
+    // cache the response
+    streamToPromise(pipeline).then(sm => sitemap = sm)
+    // make sure to attach a write stream such as streamToPromise before ending
+    smStream.end()
+    // stream write the response
+    pipeline.pipe(res).on('error', (e) => { throw e })
+  } catch (e) {
+    console.error(e)
+    res.status(500).end()
+  }
+}
+
 /* GET sitemap.xml page. */
 router.get('/sitemap.xml', function (req, res) {
-  db.all(`SELECT _id, timestamp, url, content FROM URL ORDER BY date(_id)`, [], (err, rows) => {
-    res.header('Content-Type', 'application/xml');
-    res.header('Content-Encoding', 'gzip');
-    // if we have a cached entry send it
-    if (sitemap) {
-      res.send(sitemap)
-      return
-    }
-    try {
-      const smStream = new SitemapStream({ hostname: `${process.env.DOMAIN}` })
-      // FIXME: change origin 
-      const pipeline = smStream.pipe(createGzip())
-      rows.forEach(row => {
-        smStream.write({ url: `earlier/${row.url}/`, changefreq: 'monthly', priority: 0.1 });
-      })
-      // cache the response
-      streamToPromise(pipeline).then(sm => sitemap = sm)
-      // make sure to attach a write stream such as streamToPromise before ending
-      smStream.end()
-      // stream write the response
-      pipeline.pipe(res).on('error', (e) => { throw e })
-    } catch (e) {
-      console.error(e)
-      res.status(500).end()
-    }
-  });
+  if (false)
+    db.all(globals.sqlite.SELECT_URLS, [], (err, rows) => {
+      generateSitemap(res, rows);
+    });
+  else
+    globals.psql_client.query(globals.pgsql.SELECT_ALL, (err, result) => {
+      generateSitemap(res, result.rows)
+    })
 })
 
 router.get('/robots.txt', function (req, res) {
@@ -270,6 +272,7 @@ function visitorLog(req, endpoint, id, critical) {
     "isWechat": req.useragent.isWechat,
     "critical": critical
   }
+  
   // Detect bot and adding information to requestInfo
   if (req.useragent.isBot || isbot(req.get('user-agent'))) {
     const botDetector = new BotDetector();
@@ -280,6 +283,7 @@ function visitorLog(req, endpoint, id, critical) {
       .push(requestInfo)
       .write();
   } else if (process.env.NODE_ENV == 'development') {
+    
     db2.get('useragents')
       .push(requestInfo)
       .write();

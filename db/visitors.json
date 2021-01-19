@@ -1,3 +1,31 @@
 {
-  "useragents": []
+  "useragents": [
+    {
+      "resource": "index",
+      "timestamps": "13:00:48",
+      "endpoint": "index",
+      "isMobile": false,
+      "isTablet": false,
+      "isOpera": false,
+      "isIE": false,
+      "isEdge": false,
+      "isIECompatibilityMode": false,
+      "isSafari": false,
+      "isFirefox": true,
+      "isWebkit": false,
+      "isChrome": false,
+      "isDesktop": true,
+      "isBot": false,
+      "isFacebook": false,
+      "silkAccelerated": false,
+      "browser": "Firefox",
+      "version": "84.0",
+      "os": "Windows 10.0",
+      "platform": "Microsoft Windows",
+      "geoIp": {},
+      "source": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0",
+      "isWechat": false,
+      "critical": false
+    }
+  ]
 }

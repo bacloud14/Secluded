@@ -1,5 +1,5 @@
 const LoremIpsum = require("lorem-ipsum").LoremIpsum;
-const rateLimit = require("express-rate-limit");
+
 
 var globals = {};
 globals['sqlite'] = {
@@ -61,15 +61,17 @@ globals['lorem'] = new LoremIpsum({
   }
 });
 
-globals['apiLimiter'] = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  headers: true,
-  handler: function (req, res) {
-    visitorLog(req, '.', '.', true);
-    res.status(429).send("too many requests");
-  }
-});
+globals['data/message'] = {
+  title: 'Secluded',
+  message: 'We only include bots visits of course (with isBot=true). Data describe bots visits for each endpoint in a specific time. You can find in the list bellow a growing dataset with snapshots each week. It is to note that bots visits is totally fine even if a page disallows indexing. Repetetive visits are suspecious and can even be annoying; Our final conclusions are derived after analysing which service indexed content really.',
+  technique: 'Data is like ("resource": "index", "timestamps": "21:20:27", "endpoint": "index", "isMobile": false, "isTablet": false, "isOpera": false, "isIE": false, "isEdge": false, "isIECompatibilityMode": false, "isSafari": false, "isFirefox": true, "isWebkit": false, "isChrome": false, "isDesktop": true, "isBot": false, "isFacebook": false, "silkAccelerated": false, "browser": "Firefox", "version": "84.0", "os": "Windows 10.0", "platform": "Microsoft Windows", "geoIp": {}, "source": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0", "isWechat": false)',
+}
+
+globals['index/message'] = {
+  title: 'Secluded',
+  message: 'Secluded is a webpage that tries to be isolated from web crawlers although publically visible. It is a crawler behaviour experiment. It is hopefully SEO friendly in all aspects except that it tells crawlers not to index itself. So linking to this domain to gain popularity is appreciated and thanked for. It is to note that bots visits is totally fine even if a page disallows indexing. Repetetive visits are suspecious and can even be annoying; Our final conclusions are derived after analysing which service indexed content really.',
+  technique: 'Robots meta directives and robots.txt are pieces of code that provide crawlers instructions for how to crawl or index web page content. One hidden page is hosted. Its URL (and content) is unique and random. The latest page changes over time so that we track evolution of indexing with pages aging. Link are withing this page so that crawlers can follow.',
+}
 
 var visitor_type = {
   0: 'Search Engine Bot',
