@@ -26,11 +26,6 @@ var globals = require('../globals');
     console.log(err ? err.stack : res.rows[0].message) // Hello World!
     // psql_client.end()
   })
-
-  globals.psql_client.query('SELECT _id, url, content, "timestamp" FROM "STATIC_CONTENT"."URL";', (err, res) => {
-    console.log(err ? err.stack : res.rows[0])
-    // psql_client.end()
-  })
 }
 
 router.use(useragent.express());
@@ -77,7 +72,7 @@ var j = schedule.scheduleJob(rule, function () {
     });
   else {
     globals.psql_client.query(globals.pgsql.INSERT_INTO_URL, [latest.url, latest.url, latest.content], (err, res) => {
-      console.log(err ? err.stack : '\x1b[36m%s\x1b[0m', "new table created!");
+      console.log(err ? err.stack : '\x1b[36m%s\x1b[0m', "New table created!");
     })
   }
 });
@@ -107,7 +102,7 @@ router.use(function (req, res, next) {
 /* GET home page. */
 router.get('/', function (req, res, next) {
   visitorLog(req, 'index', 'index', false);
-  if (true)
+  if (false)
     db.all(`SELECT _id, timestamp, url, content FROM URL ORDER BY date(_id)`, [], (err, rows) => {
       if (err) {
         console.log(err.message);
@@ -121,7 +116,15 @@ router.get('/', function (req, res, next) {
       });
     });
   else {
-
+    globals.psql_client.query(globals.pgsql.SELECT_ALL, (err, result) => {
+      console.log(err ? err.stack : '\x1b[36m%s\x1b[0m', "Got all rows!", result.rows[0]);
+      res.render('index', {
+        title: 'Secluded',
+        message: 'Secluded is a webpage that tries to be isolated from web crawlers although publically visible. It is a crawler behaviour experiment. It is hopefully SEO friendly in all aspects except that it tells crawlers not to index itself. So linking to this domain to gain popularity is appreciated and thanked for. It is to note that bots visits is totally fine even if a page disallows indexing. Repetetive visits are suspecious and can even be annoying; Our final conclusions are derived after analysing which service indexed content really.',
+        technique: 'Robots meta directives and robots.txt are pieces of code that provide crawlers instructions for how to crawl or index web page content. One hidden page is hosted. Its URL (and content) is unique and random. The latest page changes over time so that we track evolution of indexing with pages aging. Link are withing this page so that crawlers can follow.',
+        urls_list: result.rows.reverse()
+      });
+    })
   }
 });
 
@@ -137,11 +140,10 @@ router.get('/data', function (req, res, next) {
 /* GET earlier page. */
 router.get('/earlier/:id', function (req, res, next) {
   visitorLog(req, 'ealier', req.params.id, false);
-
-  if (true)
+  let url = req.params.id;
+  if (false)
     db.serialize(function () {
       let sql = `SELECT rowid, _id, timestamp, url, content FROM URL WHERE _id = ?`;
-      let url = req.params.id;
       db.get(sql, [url], (err, row) => {
         if (err) {
           return console.error(err.message);
@@ -162,7 +164,25 @@ router.get('/earlier/:id', function (req, res, next) {
       });
     });
   else {
-
+    globals.psql_client.query(globals.pgsql.SELECT_ONE, [url], (err, result) => {
+      console.log(err ? err.stack : '\x1b[36m%s\x1b[0m', "Got that row!", result.rows[0]);
+      if (result.rows) {
+        var ctid = result.rows[0].ctid;
+        const regexpSize = /([0-9]+),([0-9]+)/;
+        const match = ctid.match(regexpSize);
+        res.render('earlier', {
+          title: 'Secluded',
+          content: result.rows[0].content,
+          picURL: imageList[parseInt(match[2]) % 30]
+        });
+      } else {
+        console.log('\x1b[31m', `No URL found with the id: ${url}`);
+        res.status(404).render('404', {
+          title: 'Secluded',
+          error_message: `No URL found with the id: ${url}`
+        });
+      }
+    })
   }
 });
 
