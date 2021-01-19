@@ -26,17 +26,24 @@ var globals = require('../globals');
     console.log(err ? err.stack : res.rows[0].message) // Hello World!
     // psql_client.end()
   })
+
+  globals.psql_client.query('SELECT _id, url, content, "timestamp" FROM "STATIC_CONTENT"."URL";', (err, res) => {
+    console.log(err ? err.stack : res.rows[0])
+    // psql_client.end()
+  })
 }
 
 router.use(useragent.express());
 router.use(globals.apiLimiter);
 
 const myCache = new NodeCache();
-if (true) {
+if (false) {
   var db = new sqlite3.Database('./db/generated_URLs.db');
   db.run("CREATE TABLE IF NOT EXISTS URL (_id TEXT primary KEY, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, url TEXT, content TEXT)");
 } else {
-
+  globals.psql_client.query(globals.pgsql.CREATE_TABLE_IF_NOT_EXISTS, (err, res) => {
+    console.log(err ? err.stack : "new table created!");
+  });
 }
 
 var glob = require("glob")
@@ -57,9 +64,8 @@ var j = schedule.scheduleJob(rule, function () {
   var content = globals.lorem.generateParagraphs(1);
   const latest = { url: uuid.v4(), content: content };
   console.log('\x1b[36m%s\x1b[0m', 'CRON job caching', latest.url);
-  if (true)
+  if (false)
     db.serialize(function () {
-      db.run("CREATE TABLE IF NOT EXISTS URL (_id TEXT primary KEY, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, url TEXT, content TEXT)");
       db.run("INSERT INTO URL(_id, url, content) VALUES (?,?,?)", [latest.url, latest.url, latest.content], function (err) {
         if (err) {
           return console.log(err.message);
@@ -70,7 +76,9 @@ var j = schedule.scheduleJob(rule, function () {
       });
     });
   else {
-
+    globals.psql_client.query(globals.pgsql.INSERT_INTO_URL, [latest.url, latest.url, latest.content], (err, res) => {
+      console.log(err ? err.stack : '\x1b[36m%s\x1b[0m', "new table created!");
+    })
   }
 });
 
@@ -125,19 +133,6 @@ router.get('/data', function (req, res, next) {
     technique: 'Data is like ("resource": "index", "timestamps": "21:20:27", "endpoint": "index", "isMobile": false, "isTablet": false, "isOpera": false, "isIE": false, "isEdge": false, "isIECompatibilityMode": false, "isSafari": false, "isFirefox": true, "isWebkit": false, "isChrome": false, "isDesktop": true, "isBot": false, "isFacebook": false, "silkAccelerated": false, "browser": "Firefox", "version": "84.0", "os": "Windows 10.0", "platform": "Microsoft Windows", "geoIp": {}, "source": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0", "isWechat": false)',
   });
 });
-
-
-// /* GET latest page. */
-// router.get('/latest', function (req, res, next) {
-//   var url = myCache.get("latest").url
-//   visitorLog(req, 'latest', url, false);
-//   var content = myCache.get("latest").content;
-//   console.log('\x1b[33m%s\x1b[0m', "Latest found ==>  " + url)
-//   res.render('earlier', {
-//     title: 'Secluded',
-//     content: content
-//   });
-// });
 
 /* GET earlier page. */
 router.get('/earlier/:id', function (req, res, next) {
