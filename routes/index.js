@@ -42,7 +42,7 @@ var apiLimiter = rateLimit({
 router.use(apiLimiter);
 
 const myCache = new NodeCache();
-if (false) {
+if (process.env.CACHE!="POSTGRESQL") {
   var db = new sqlite3.Database('./db/generated_URLs.db');
   db.run(globals.sqlite.CREATE_TABLE_IF_NOT_EXISTS);
 } else {
@@ -73,7 +73,7 @@ var j = schedule.scheduleJob(rule, function () {
   var content = globals.lorem.generateParagraphs(1);
   const latest = { url: uuid.v4(), content: content };
   console.log('\x1b[36m%s\x1b[0m', 'CRON job caching', latest.url);
-  if (false)
+  if (process.env.CACHE!="POSTGRESQL")
     db.serialize(function () {
       db.run(globals.sqlite.INSERT_URL, [latest.url, latest.url, latest.content], function (err) {
         if (err) {
@@ -116,7 +116,7 @@ router.use(function (req, res, next) {
 /* GET home page. */
 router.get('/', function (req, res, next) {
   visitorLog(req, 'index', 'index', false);
-  if (false)
+  if (process.env.CACHE!="POSTGRESQL")
     db.all(globals.sqlite.SELECT_URLS, [], (err, rows) => {
       if (err) {
         console.log(err.message);
@@ -149,7 +149,7 @@ function notFound(res, url) {
 router.get('/earlier/:id', function (req, res, next) {
   visitorLog(req, 'ealier', req.params.id, false);
   let url = req.params.id;
-  if (false)
+  if (process.env.CACHE!="POSTGRESQL")
     db.serialize(function () {
       db.get(globals.sqlite.SELECT_ONE_URL, [url], (err, row) => {
         if (err) {
@@ -216,7 +216,7 @@ function generateSitemap(res, rows) {
 
 /* GET sitemap.xml page. */
 router.get('/sitemap.xml', function (req, res) {
-  if (false)
+  if (process.env.CACHE!="POSTGRESQL")
     db.all(globals.sqlite.SELECT_URLS, [], (err, rows) => {
       generateSitemap(res, rows);
     });
@@ -275,7 +275,7 @@ function visitorLog(req, endpoint, id, critical) {
     "isWechat": req.useragent.isWechat,
     "critical": critical
   }
-  if (true) {
+  if (process.env.CACHE=="POSTGRESQL") {
     globals.psql_client.query(globals.pgsql.INSERT_INTO_USERAGENT, [id, endpoint, req.useragent.isMobile, req.useragent.isTablet, req.useragent.isOpera, req.useragent.isIE, req.useragent.isEdge, req.useragent.isIECompatibilityMode, req.useragent.isSafari, req.useragent.isFirefox, req.useragent.isWebkit, req.useragent.isChrome, req.useragent.isDesktop, req.useragent.isBot, req.useragent.isFacebook, req.useragent.silkAccelerated, req.useragent.browser, req.useragent.version, req.useragent.os, req.useragent.platform, req.useragent.source, req.useragent.isWechat, critical], (err, res) => {
       console.log(err ? err.stack : '\x1b[43m', "New visitor created!");
     })
