@@ -46,7 +46,7 @@ if (false) {
   var db = new sqlite3.Database('./db/generated_URLs.db');
   db.run(globals.sqlite.CREATE_TABLE_IF_NOT_EXISTS);
 } else {
-  globals.psql_client.query(globals.pgsql.CREATE_TABLE_IF_NOT_EXISTS, (err, res) => {
+  globals.psql_client.query(globals.pgsql.CREATE_TABLE_URL_IF_NOT_EXISTS, (err, res) => {
     console.log(err ? err.stack : "new table created!");
   });
 }
@@ -267,7 +267,6 @@ function visitorLog(req, endpoint, id, critical) {
     "version": req.useragent.version,
     "os": req.useragent.os,
     "platform": req.useragent.platform,
-    "geoIp": req.useragent.geoIp,
     "source": req.useragent.source,
     "isWechat": req.useragent.isWechat,
     "critical": critical
