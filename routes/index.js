@@ -47,9 +47,11 @@ if (process.env.CACHE!="POSTGRESQL") {
   db.run(globals.sqlite.CREATE_TABLE_IF_NOT_EXISTS);
 } else {
   globals.psql_client.query(globals.pgsql.CREATE_TABLE_URL_IF_NOT_EXISTS, (err, res) => {
+    console.log(globals.pgsql.CREATE_TABLE_URL_IF_NOT_EXISTS)
     console.log(err ? err.stack : "new table URL created!");
   });
   globals.psql_client.query(globals.pgsql.CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS, (err, res) => {
+    console.log(globals.pgsql.CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS)
     console.log(err ? err.stack : "new table USERAGENT created!");
   });
 
