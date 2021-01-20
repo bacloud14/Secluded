@@ -52,12 +52,13 @@ dotenv.config();
 
 const { Client } = require('pg')
 if (process.env.SERVER == "HEROKU") {
-  globals.pgsql.CREATE_TABLE_URL_IF_NOT_EXISTS.replace('"STATIC_CONTENT".', '');
-  globals.pgsql.CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS.replace('"STATIC_CONTENT".', '');
-  globals.pgsql.INSERT_INTO_URL.replace('"STATIC_CONTENT".', '');
-  globals.pgsql.SELECT_ALL.replace('"STATIC_CONTENT".', '');
-  globals.pgsql.SELECT_ONE.replace('"STATIC_CONTENT".', '');
-  globals.pgsql.INSERT_INTO_USERAGENT.replace('"STATIC_CONTENT".', '');
+
+  globals.pgsql.CREATE_TABLE_URL_IF_NOT_EXISTS = globals.pgsql.CREATE_TABLE_URL_IF_NOT_EXISTS.replace('"STATIC_CONTENT".', '');
+  globals.pgsql.CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS = globals.pgsql.CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS.replace('"STATIC_CONTENT".', '');
+  globals.pgsql.INSERT_INTO_URL = globals.pgsql.INSERT_INTO_URL.replace('"STATIC_CONTENT".', '');
+  globals.pgsql.SELECT_ALL = globals.pgsql.SELECT_ALL.replace('"STATIC_CONTENT".', '');
+  globals.pgsql.SELECT_ONE = globals.pgsql.SELECT_ONE.replace('"STATIC_CONTENT".', '');
+  globals.pgsql.INSERT_INTO_USERAGENT = globals.pgsql.INSERT_INTO_USERAGENT.replace('"STATIC_CONTENT".', '');
 
   globals['psql_client'] = new Client({
     connectionString: process.env.DATABASE_URL,
