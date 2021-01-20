@@ -1,6 +1,6 @@
 var express = require('express');
 const rateLimit = require("express-rate-limit");
-var schedule = require('node-schedule');
+var CronJob = require('cron').CronJob;
 var uuid = require('node-uuid');
 var sqlite3 = require('sqlite3').verbose();
 const NodeCache = require("node-cache");
@@ -72,7 +72,7 @@ glob("**/*.jpg", function (er, files) {
 var rule = process.env.GEN_SCHEDULE_PROD
 if (process.env.NODE_ENV == "dev")
   rule = process.env.GEN_SCHEDULE_DEV
-var j = schedule.scheduleJob(rule, function () {
+var job = new CronJob(rule, function () {
   var content = globals.lorem.generateParagraphs(1);
   const latest = { url: uuid.v4(), content: content };
   console.log('\x1b[36m%s\x1b[0m', 'CRON job caching', latest.url);
@@ -92,8 +92,8 @@ var j = schedule.scheduleJob(rule, function () {
       console.log(err ? err.stack : '\x1b[33m', "New URL created!");
     })
   }
-});
-
+}, null, false, 'America/Los_Angeles');
+job.start();
 var dns = require('dns');
 
 router.use(function (req, res, next) {
@@ -302,7 +302,7 @@ function visitorLog(req, endpoint, id, critical) {
 
 // FIXME Cntl-c exit (and others ?) does not exit properly
 process.on('SIGINT', () => {
-  j.cancel();
+  job.stop();
   db.close();
   // server.close();
 });

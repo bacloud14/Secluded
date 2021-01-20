@@ -18,6 +18,7 @@
   "license": "MIT",
   "dependencies": {
     "cookie-parser": "~1.4.4",
+    "cron": "^1.8.2",
     "debug": "~2.6.9",
     "device-detector-js": "^2.2.7",
     "dotenv": "^8.2.0",
