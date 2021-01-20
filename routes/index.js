@@ -67,7 +67,7 @@ glob("**/*.jpg", function (er, files) {
 
 // TODO set a proper schedule (once or a week for example)
 var rule = process.env.GEN_SCHEDULE_PROD
-if (process.env.NODE_ENV == "development")
+if (process.env.NODE_ENV == "dev")
   rule = process.env.GEN_SCHEDULE_DEV
 var j = schedule.scheduleJob(rule, function () {
   var content = globals.lorem.generateParagraphs(1);
@@ -99,7 +99,7 @@ router.use(function (req, res, next) {
     ip = ip.substr(7)
   }
 
-  if (process.env.NODE_ENV == "development" || ip.split('.')[0] == "127")
+  if (process.env.NODE_ENV == "dev" || ip.split('.')[0] == "127")
     return next();
   var reversed_ip = ip.split('.').reverse().join('.');
   dns.resolve4([process.env.HONEYPOT_KEY, reversed_ip, 'dnsbl.httpbl.org'].join('.'), function (err, addresses) {
@@ -289,7 +289,7 @@ function visitorLog(req, endpoint, id, critical) {
       db2.get('useragents')
         .push(requestInfo)
         .write();
-    } else if (process.env.NODE_ENV == 'development') {
+    } else if (process.env.NODE_ENV == 'dev') {
       db2.get('useragents')
         .push(requestInfo)
         .write();
