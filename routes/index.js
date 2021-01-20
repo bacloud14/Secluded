@@ -86,7 +86,7 @@ var j = schedule.scheduleJob(rule, function () {
     });
   else {
     globals.psql_client.query(globals.pgsql.INSERT_INTO_URL, [latest.url, latest.url, latest.content], (err, res) => {
-      console.log(err ? err.stack : '\x1b[43m', "New URL created!");
+      console.log(err ? err.stack : '\x1b[33m', "New URL created!");
     })
   }
 });
@@ -126,7 +126,7 @@ router.get('/', function (req, res, next) {
     });
   else {
     globals.psql_client.query(globals.pgsql.SELECT_ALL, (err, result) => {
-      console.log(err ? err.stack : '\x1b[36m%s\x1b[0m', "Got all rows!", result.rows[0]);
+      console.log(err ? err.stack : "Got all rows!");
       res.render('index', Object.assign(globals['index/message'], { urls_list: result.rows.reverse() }));
     })
   }
@@ -167,7 +167,7 @@ router.get('/earlier/:id', function (req, res, next) {
     });
   else {
     globals.psql_client.query(globals.pgsql.SELECT_ONE, [url], (err, result) => {
-      console.log(err ? err.stack : '\x1b[36m%s\x1b[0m', "Got that row!", result.rows[0]);
+      console.log(err ? err.stack : '\x1b[36m%s\x1b[0m', "Got that row!");
       if (result.rows) {
         var ctid = result.rows[0].ctid;
         const regexpSize = /([0-9]+),([0-9]+)/;
@@ -277,7 +277,7 @@ function visitorLog(req, endpoint, id, critical) {
   }
   if (process.env.CACHE=="POSTGRESQL") {
     globals.psql_client.query(globals.pgsql.INSERT_INTO_USERAGENT, [id, endpoint, req.useragent.isMobile, req.useragent.isTablet, req.useragent.isOpera, req.useragent.isIE, req.useragent.isEdge, req.useragent.isIECompatibilityMode, req.useragent.isSafari, req.useragent.isFirefox, req.useragent.isWebkit, req.useragent.isChrome, req.useragent.isDesktop, req.useragent.isBot, req.useragent.isFacebook, req.useragent.silkAccelerated, req.useragent.browser, req.useragent.version, req.useragent.os, req.useragent.platform, req.useragent.source, req.useragent.isWechat, critical], (err, res) => {
-      console.log(err ? err.stack : '\x1b[43m', "New visitor created!");
+      console.log(err ? err.stack : '\x1b[33m', "New visitor created!");
     })
   } else {
     // Detect bot and adding information to requestInfo

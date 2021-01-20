@@ -36,8 +36,8 @@ globals['pgsql'] = {
   "CREATE_DATABASE": "CREATE DATABASE secluded WITH OWNER = postgres ENCODING = 'UTF8' LC_COLLATE = 'English_United States.1252' LC_CTYPE = 'English_United States.1252' TABLESPACE = pg_default CONNECTION LIMIT = -1;",
   "CREATE_SCHEMA": "CREATE SCHEMA 'STATIC_CONTENT' AUTHORIZATION postgres;",
 
-  "CREATE_TABLE_URL_IF_NOT_EXISTS": 'CREATE TABLE IF NOT EXISTS "STATIC_CONTENT"."URL" (_id text NOT NULL, "timestamp" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP, url text NOT NULL, content text COLLATE pg_catalog."default" NOT NULL, CONSTRAINT "URL_pkey" PRIMARY KEY (_id))',
-  "CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS": 'CREATE TABLE IF NOT EXISTS "STATIC_CONTENT"."USERAGENT" ( resource text NOT NULL, timestamps time without time zone NOT NULL, endpoint text NOT NULL, "isMobile" boolean, "isTablet" boolean, "isOpera" boolean, "isIE" boolean, "isEdge" boolean, "isIECompatibilityMode" boolean, "isSafari" boolean, "isFirefox" boolean, "isWebkit" boolean, "isChrome" boolean, "isDesktop" boolean, "isBot" boolean, "isFacebook" boolean, "silkAccelerated" boolean, browser text, version text, os text, platform text, source text, "isWechat" boolean, critical boolean );  ALTER TABLE "STATIC_CONTENT"."USERAGENT" OWNER to postgres;',
+  "CREATE_TABLE_URL_IF_NOT_EXISTS": 'CREATE TABLE IF NOT EXISTS "STATIC_CONTENT"."URL" (_id text NOT NULL, "timestamp" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP, url text NOT NULL, content text COLLATE pg_catalog."default" NOT NULL, CONSTRAINT "URL_pkey" PRIMARY KEY (_id))',
+  "CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS": 'CREATE TABLE IF NOT EXISTS "STATIC_CONTENT"."USERAGENT" ( resource text NOT NULL, timestamps time with time zone NOT NULL, endpoint text NOT NULL, "isMobile" boolean, "isTablet" boolean, "isOpera" boolean, "isIE" boolean, "isEdge" boolean, "isIECompatibilityMode" boolean, "isSafari" boolean, "isFirefox" boolean, "isWebkit" boolean, "isChrome" boolean, "isDesktop" boolean, "isBot" boolean, "isFacebook" boolean, "silkAccelerated" boolean, browser text, version text, os text, platform text, source text, "isWechat" boolean, critical boolean );  ALTER TABLE "STATIC_CONTENT"."USERAGENT" OWNER to postgres;',
 
   "INSERT_INTO_URL": 'INSERT INTO "STATIC_CONTENT"."URL"(_id, url, content, "timestamp") VALUES ($1, $2, $3, CURRENT_TIMESTAMP);',
   "SELECT_ALL": 'SELECT _id, "timestamp", url, content FROM "STATIC_CONTENT"."URL" ORDER BY("timestamp")',
@@ -52,13 +52,13 @@ dotenv.config();
 
 const { Client } = require('pg')
 if (process.env.SERVER == "HEROKU") {
-  globals.CREATE_TABLE_URL_IF_NOT_EXISTS.replace('"STATIC_CONTENT".', '');
-  globals.CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS.replace('"STATIC_CONTENT".', '');
-  globals.INSERT_INTO_URL.replace('"STATIC_CONTENT".', '');
-  globals.SELECT_ALL.replace('"STATIC_CONTENT".', '');
-  globals.SELECT_ONE.replace('"STATIC_CONTENT".', '');
-  globals.INSERT_INTO_USERAGENT.replace('"STATIC_CONTENT".', '');
-  
+  globals.pgsql.CREATE_TABLE_URL_IF_NOT_EXISTS.replace('"STATIC_CONTENT".', '');
+  globals.pgsql.CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS.replace('"STATIC_CONTENT".', '');
+  globals.pgsql.INSERT_INTO_URL.replace('"STATIC_CONTENT".', '');
+  globals.pgsql.SELECT_ALL.replace('"STATIC_CONTENT".', '');
+  globals.pgsql.SELECT_ONE.replace('"STATIC_CONTENT".', '');
+  globals.pgsql.INSERT_INTO_USERAGENT.replace('"STATIC_CONTENT".', '');
+
   globals['psql_client'] = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: {
