@@ -8,9 +8,10 @@ var router = express.Router();
 var useragent = require('express-useragent');
 const dotenv = require('dotenv');
 dotenv.config();
-console.log(`Your port is ${process.env.PORT}`); // 8626
-console.log(`Your domain is ${process.env.DOMAIN}`); // 8626
-console.log(`Your Node environment is ${process.env.NODE_ENV}`); // 8626
+console.log(`Your port is ${process.env.PORT}`);
+console.log(`Your domain is ${process.env.DOMAIN}`);
+console.log(`Your Node environment is ${process.env.NODE_ENV}`);
+console.log(`Your Cloud server is ${process.env.SERVER}`); 
 var globals = require('../globals');
 
 {
