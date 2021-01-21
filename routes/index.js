@@ -55,7 +55,11 @@ if (process.env.CACHE!="POSTGRESQL") {
     console.log(globals.pgsql.CREATE_TABLE_USERAGENTS_IF_NOT_EXISTS)
     console.log(err ? err.stack : "new table USERAGENT created!");
   });
-
+  var content = globals.lorem.generateParagraphs(1);
+  var latest = { url: uuid.v4(), content: content };
+  globals.psql_client.query(globals.pgsql.INSERT_INTO_URL, [latest.url, latest.url, latest.content], (err, res) => {
+    console.log(err ? err.stack : '\x1b[33m', "First URL created!");
+  })
 }
 
 var glob = require("glob")
@@ -74,7 +78,7 @@ if (process.env.NODE_ENV == "dev")
   rule = process.env.GEN_SCHEDULE_DEV
 var job = new CronJob(rule, function () {
   var content = globals.lorem.generateParagraphs(1);
-  const latest = { url: uuid.v4(), content: content };
+  var latest = { url: uuid.v4(), content: content };
   console.log('\x1b[36m%s\x1b[0m', 'CRON job caching', latest.url);
   if (process.env.CACHE!="POSTGRESQL")
     db.serialize(function () {
