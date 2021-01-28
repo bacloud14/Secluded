@@ -23,16 +23,16 @@ Just the homepage.
 
 Todo: 
 
-A lot of things, basically only URL generation is done at this stage; No statistics logic was written.
+Alot of things, basically only URL generation is done at this stage; No statistics logic was written.
 A beautiful statistics dashboard.
 
 Please see open issues for a specific issue, and do not hesitate to open any new issue (like better code, readability, modularity and best practice, performance, better UI or even functionality enhancements...).
 
-Please know that I am not a keen NodeJS developer, but I successfully made this web application. It is in its early stage and not proper for final service yet.
+Please note that I am not a keen NodeJS developer, but I successfully made this web application. It is in its early stage and not proper for final service yet.
 
 If you contribute, please consider that I can merge and publish a new release under one channel or another. It will be 100% free although I can add ads to generate some coffee expenses :)
 
-If you want to maintain the project with me; You can always ask.
+If you want to maintain the project with me, you can always ask.
 
 Please keep it fair if you want to deploy anywhere; Ask for permission.
 
