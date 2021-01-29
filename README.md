@@ -23,7 +23,7 @@ Just the homepage.
 
 Todo: 
 
-Alot of things, basically only URL generation is done at this stage; No statistics logic was written.
+A lot of things, basically only URL generation is done at this stage; No statistics logic was written.
 A beautiful statistics dashboard.
 
 Please see open issues for a specific issue, and do not hesitate to open any new issue (like better code, readability, modularity and best practice, performance, better UI or even functionality enhancements...).
