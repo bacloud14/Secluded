@@ -3,7 +3,7 @@ This was up and running non stop on a Heroku instance. Now time to end the charg
 Anyway, You can always check the history of visitors here 
 https://github.com/bacloud14/Secluded/blob/main/public/data/useragents
 
-Or www.secluded.com But I no longer guarantee.
+Or www.botstudies.com But I no longer guarantee.
 
 # Secluded
 
