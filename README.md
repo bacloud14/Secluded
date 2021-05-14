@@ -1,3 +1,10 @@
+Edit:
+This was up and running non stop on a Heroku instance. Now time to end the charges. I think data will not grow. 
+Anyway, You can always check the history of visitors here 
+https://github.com/bacloud14/Secluded/blob/main/public/data/useragents
+
+Or www.secluded.com But I no longer guarantee.
+
 # Secluded
 
 Secluded is a webpage that tries to be isolated from web crawlers although publically visible. It is a crawler behaviour experiment.
